@@ -75,8 +75,15 @@ class EmbeddingGenerator:
 
         Returns:
             Lista de embeddings na mesma ordem dos textos de entrada.
+
+        Note:
+            Em caso de falha persistente após retry, textos individuais
+            que não puderem ser processados serão substituídos por
+            vetores zero. Isso pode impactar a qualidade das buscas.
+            Recomenda-se verificar os logs para identificar falhas.
         """
         embeddings: list[list[float]] = []
+        failed_count = 0
 
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
@@ -92,13 +99,24 @@ class EmbeddingGenerator:
                 embeddings.extend(batch_embeddings)
             except openai.OpenAIError as e:
                 logger.error(f"Erro no lote {batch_num}: {e}")
-                # Fallback: processa individualmente com vetor zero para falhas
+                # Fallback: processa individualmente com retry
                 for text in batch:
                     try:
                         emb = self.generate_embedding(text)
                         embeddings.append(emb)
                     except openai.OpenAIError:
-                        logger.error("Falha ao gerar embedding individual")
+                        failed_count += 1
+                        logger.warning(
+                            f"Falha ao gerar embedding individual. "
+                            f"Usando vetor zero como fallback (texto: {text[:50]}...)"
+                        )
                         embeddings.append([0.0] * self.dimension)
+
+        if failed_count > 0:
+            logger.warning(
+                f"{failed_count} embeddings não puderam ser gerados e foram "
+                f"substituídos por vetores zero. Isso pode impactar a qualidade "
+                f"das buscas semânticas."
+            )
 
         return embeddings

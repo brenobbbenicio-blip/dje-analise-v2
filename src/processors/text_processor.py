@@ -13,6 +13,14 @@ from src.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 
+# Padrão de número de processo no formato CNJ (ex: 0001234-56.2024.6.00.0001)
+CNJ_PROCESS_NUMBER_PATTERN = re.compile(r"\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}")
+
+# Padrão para extração de órgão julgador
+JUDICIAL_BODY_PATTERN = re.compile(
+    r"(Tribunal|Juiz|Juíza|Relator|Relatora):?\s*([^\n]+)"
+)
+
 
 class TextProcessor:
     """Processador de texto para jurisprudências eleitorais.
@@ -80,18 +88,12 @@ class TextProcessor:
         content = decision.get("content", "")
 
         # Extrai número do processo (formato CNJ)
-        process_match = re.search(
-            r"\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}",
-            content,
-        )
+        process_match = CNJ_PROCESS_NUMBER_PATTERN.search(content)
         if process_match:
             metadata["process_number"] = process_match.group()
 
         # Extrai órgão julgador
-        orgao_match = re.search(
-            r"(Tribunal|Juiz|Juíza|Relator|Relatora):?\s*([^\n]+)",
-            content,
-        )
+        orgao_match = JUDICIAL_BODY_PATTERN.search(content)
         if orgao_match:
             metadata["judicial_body"] = orgao_match.group(2).strip()
 
