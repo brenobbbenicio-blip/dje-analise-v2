@@ -1,1 +1,1 @@
-"""Módulo de utilitários"""
+"""Módulo de utilitários compartilhados."""

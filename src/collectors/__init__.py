@@ -1,1 +1,1 @@
-"""Módulo de coleta de dados"""
+"""Módulo de coleta de dados do DJE."""

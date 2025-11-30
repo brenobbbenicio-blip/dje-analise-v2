@@ -1,37 +1,37 @@
-"""
-Sistema de logging
+"""Sistema centralizado de logging para a aplicação.
+
+Fornece uma função factory para criar loggers configurados de forma
+consistente em toda a aplicação.
 """
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
 
 from src.config import settings
 
 
 def setup_logger(
     name: str,
-    log_file: Optional[Path] = None,
-    level: str = settings.LOG_LEVEL
+    log_file: Path | None = None,
+    level: str = settings.LOG_LEVEL,
 ) -> logging.Logger:
-    """
-    Configura e retorna um logger
+    """Configura e retorna um logger com handlers padrão.
 
     Args:
-        name: Nome do logger
-        log_file: Arquivo de log (opcional)
-        level: Nível de log
+        name: Nome do logger (geralmente __name__ do módulo).
+        log_file: Caminho opcional para arquivo de log.
+        level: Nível de logging (DEBUG, INFO, WARNING, ERROR, CRITICAL).
 
     Returns:
-        Logger configurado
+        Logger configurado com console handler e, opcionalmente, file handler.
     """
     logger = logging.getLogger(name)
     logger.setLevel(getattr(logging, level.upper()))
 
-    # Remove handlers existentes
+    # Remove handlers existentes para evitar duplicação
     logger.handlers.clear()
 
-    # Formatter
+    # Formatter padrão
     formatter = logging.Formatter(settings.LOG_FORMAT)
 
     # Console handler

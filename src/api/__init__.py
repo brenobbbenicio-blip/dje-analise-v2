@@ -1,1 +1,1 @@
-"""Módulo API REST"""
+"""Módulo API REST para consultas de jurisprudência."""

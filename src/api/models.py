@@ -1,82 +1,103 @@
+"""Modelos Pydantic para a API REST.
+
+Define schemas de validação para requisições e respostas
+dos endpoints da API.
 """
-Modelos Pydantic para a API
-"""
-from typing import List, Optional, Dict, Any
 from datetime import datetime
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
 class QueryRequest(BaseModel):
-    """Requisição de consulta"""
+    """Requisição de consulta RAG com geração de resposta."""
+
     query: str = Field(..., description="Pergunta sobre jurisprudência")
-    n_results: Optional[int] = Field(5, description="Número de resultados", ge=1, le=20)
-    temperature: Optional[float] = Field(0.7, description="Temperatura do modelo", ge=0, le=2)
+    n_results: int | None = Field(
+        5, description="Número de documentos para contexto", ge=1, le=20
+    )
+    temperature: float | None = Field(
+        0.7, description="Temperatura do modelo LLM", ge=0, le=2
+    )
 
 
 class SearchRequest(BaseModel):
-    """Requisição de busca"""
+    """Requisição de busca semântica simples."""
+
     query: str = Field(..., description="Consulta de busca")
-    n_results: Optional[int] = Field(5, description="Número de resultados", ge=1, le=50)
-    filters: Optional[Dict[str, Any]] = Field(None, description="Filtros de metadados")
+    n_results: int | None = Field(
+        5, description="Número de resultados", ge=1, le=50
+    )
+    filters: dict[str, Any] | None = Field(
+        None, description="Filtros de metadados"
+    )
 
 
 class DocumentMetadata(BaseModel):
-    """Metadados de um documento"""
-    title: Optional[str] = None
-    date: Optional[str] = None
-    url: Optional[str] = None
-    process_number: Optional[str] = None
-    judicial_body: Optional[str] = None
-    chunk_index: Optional[int] = None
-    total_chunks: Optional[int] = None
+    """Metadados associados a um documento ou chunk."""
+
+    title: str | None = None
+    date: str | None = None
+    url: str | None = None
+    process_number: str | None = None
+    judicial_body: str | None = None
+    chunk_index: int | None = None
+    total_chunks: int | None = None
 
 
 class SearchResult(BaseModel):
-    """Resultado de busca"""
+    """Resultado individual de uma busca."""
+
     id: str
     text: str
-    metadata: Dict[str, Any]
-    distance: Optional[float] = None
+    metadata: dict[str, Any]
+    distance: float | None = None
 
 
 class SearchResponse(BaseModel):
-    """Resposta de busca"""
+    """Resposta de busca semântica."""
+
     query: str
-    results: List[SearchResult]
+    results: list[SearchResult]
     total: int
 
 
 class QueryResponse(BaseModel):
-    """Resposta de consulta com RAG"""
+    """Resposta de consulta RAG com resposta gerada."""
+
     query: str
     answer: str
-    sources: List[SearchResult]
+    sources: list[SearchResult]
     model: str
 
 
 class CollectionStats(BaseModel):
-    """Estatísticas da coleção"""
+    """Estatísticas da coleção de documentos."""
+
     name: str
     count: int
     persist_directory: str
 
 
 class SystemStats(BaseModel):
-    """Estatísticas do sistema"""
+    """Estatísticas gerais do sistema RAG."""
+
     vector_store: CollectionStats
     embedding_model: str
     chat_model: str
 
 
 class HealthResponse(BaseModel):
-    """Resposta de health check"""
+    """Resposta de health check da API."""
+
     status: str
     timestamp: datetime
     version: str
 
 
 class ErrorResponse(BaseModel):
-    """Resposta de erro"""
+    """Resposta padronizada de erro."""
+
     error: str
-    detail: Optional[str] = None
+    detail: str | None = None
     timestamp: datetime

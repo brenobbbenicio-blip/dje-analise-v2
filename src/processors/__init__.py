@@ -1,1 +1,1 @@
-"""Módulo de processamento de dados"""
+"""Módulo de processamento e chunking de textos jurídicos."""

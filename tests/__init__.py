@@ -1,1 +1,1 @@
-"""Testes do sistema"""
+"""Suite de testes do sistema DJE Análise."""

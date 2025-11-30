@@ -1,44 +1,51 @@
+"""Coletor de dados do Diário da Justiça Eletrônica (DJE).
+
+Este módulo implementa a coleta de decisões judiciais do TSE,
+incluindo scraping de páginas HTML e extração de texto de PDFs.
 """
-Coletor de dados do Diário da Justiça Eletrônica (DJE)
-"""
+import json
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Dict, Optional
+
+import PyPDF2
 import requests
 from bs4 import BeautifulSoup
-import PyPDF2
-import json
 
 from src.config import settings
 from src.utils.logger import setup_logger
-
 
 logger = setup_logger(__name__)
 
 
 class DJECollector:
-    """Coletor de jurisprudências do DJE"""
+    """Coletor de jurisprudências do DJE do TSE.
 
-    def __init__(self):
+    Realiza scraping do site do TSE para coletar decisões judiciais,
+    com suporte a retry automático e rate limiting.
+    """
+
+    def __init__(self) -> None:
+        """Inicializa o coletor com configurações padrão."""
         self.base_url = settings.DJE_BASE_URL
         self.timeout = settings.REQUEST_TIMEOUT
         self.max_retries = settings.MAX_RETRIES
         self.rate_limit_delay = settings.RATE_LIMIT_DELAY
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            ),
         })
 
-    def fetch_page(self, url: str) -> Optional[str]:
-        """
-        Faz requisição HTTP com retry
+    def fetch_page(self, url: str) -> str | None:
+        """Faz requisição HTTP com retry exponencial.
 
         Args:
-            url: URL para fazer a requisição
+            url: URL para fazer a requisição.
 
         Returns:
-            Conteúdo HTML da página ou None se falhar
+            Conteúdo HTML da página ou None se todas as tentativas falharem.
         """
         for attempt in range(self.max_retries):
             try:
@@ -48,58 +55,66 @@ class DJECollector:
             except requests.RequestException as e:
                 logger.warning(f"Tentativa {attempt + 1} falhou: {e}")
                 if attempt < self.max_retries - 1:
-                    time.sleep(2 ** attempt)
+                    time.sleep(2 ** attempt)  # Backoff exponencial
                 else:
-                    logger.error(f"Falha ao buscar {url} após {self.max_retries} tentativas")
-                    return None
+                    logger.error(
+                        f"Falha ao buscar {url} após {self.max_retries} tentativas"
+                    )
+        return None
 
     def extract_pdf_text(self, pdf_path: Path) -> str:
-        """
-        Extrai texto de um arquivo PDF
+        """Extrai texto de um arquivo PDF.
 
         Args:
-            pdf_path: Caminho para o arquivo PDF
+            pdf_path: Caminho para o arquivo PDF.
 
         Returns:
-            Texto extraído do PDF
+            Texto extraído do PDF ou string vazia em caso de erro.
         """
         try:
-            with open(pdf_path, 'rb') as file:
+            with open(pdf_path, "rb") as file:
                 pdf_reader = PyPDF2.PdfReader(file)
-                text = ""
+                text_parts: list[str] = []
                 for page in pdf_reader.pages:
-                    text += page.extract_text() + "\n"
-                return text
-        except Exception as e:
+                    extracted = page.extract_text()
+                    if extracted:
+                        text_parts.append(extracted)
+                return "\n".join(text_parts)
+        except (OSError, PyPDF2.errors.PdfReadError) as e:
             logger.error(f"Erro ao extrair texto do PDF {pdf_path}: {e}")
             return ""
 
-    def parse_decision(self, html_content: str) -> List[Dict[str, str]]:
-        """
-        Processa HTML e extrai decisões
+    def parse_decision(self, html_content: str) -> list[dict[str, str]]:
+        """Processa HTML e extrai decisões judiciais.
 
         Args:
-            html_content: Conteúdo HTML da página
+            html_content: Conteúdo HTML da página.
 
         Returns:
-            Lista de decisões extraídas
+            Lista de decisões extraídas com seus metadados.
         """
-        soup = BeautifulSoup(html_content, 'html.parser')
-        decisions = []
+        soup = BeautifulSoup(html_content, "html.parser")
+        decisions: list[dict[str, str]] = []
 
-        # Exemplo de parsing - adaptar conforme estrutura real do DJE
-        articles = soup.find_all('article', class_='decision')
+        articles = soup.find_all("article", class_="decision")
         for article in articles:
             try:
-                decision = {
-                    'title': article.find('h2').get_text(strip=True) if article.find('h2') else '',
-                    'date': article.find('time').get('datetime', '') if article.find('time') else '',
-                    'content': article.find('div', class_='content').get_text(strip=True) if article.find('div', class_='content') else '',
-                    'url': article.find('a').get('href', '') if article.find('a') else '',
-                    'collected_at': datetime.now().isoformat()
+                h2_tag = article.find("h2")
+                time_tag = article.find("time")
+                content_div = article.find("div", class_="content")
+                link_tag = article.find("a")
+
+                decision: dict[str, str] = {
+                    "title": h2_tag.get_text(strip=True) if h2_tag else "",
+                    "date": time_tag.get("datetime", "") if time_tag else "",
+                    "content": (
+                        content_div.get_text(strip=True) if content_div else ""
+                    ),
+                    "url": link_tag.get("href", "") if link_tag else "",
+                    "collected_at": datetime.now().isoformat(),
                 }
                 decisions.append(decision)
-            except Exception as e:
+            except AttributeError as e:
                 logger.warning(f"Erro ao processar decisão: {e}")
                 continue
 
@@ -107,20 +122,19 @@ class DJECollector:
 
     def collect_decisions(
         self,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        max_pages: int = 10
-    ) -> List[Dict[str, str]]:
-        """
-        Coleta decisões do DJE
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        max_pages: int = 10,
+    ) -> list[dict[str, str]]:
+        """Coleta decisões do DJE em um intervalo de datas.
 
         Args:
-            start_date: Data inicial de coleta
-            end_date: Data final de coleta
-            max_pages: Número máximo de páginas a coletar
+            start_date: Data inicial (padrão: 30 dias atrás).
+            end_date: Data final (padrão: hoje).
+            max_pages: Número máximo de páginas a coletar.
 
         Returns:
-            Lista de decisões coletadas
+            Lista de todas as decisões coletadas.
         """
         if not start_date:
             start_date = datetime.now() - timedelta(days=30)
@@ -129,12 +143,11 @@ class DJECollector:
 
         logger.info(f"Coletando decisões de {start_date} até {end_date}")
 
-        all_decisions = []
+        all_decisions: list[dict[str, str]] = []
 
         for page in range(1, max_pages + 1):
             logger.info(f"Coletando página {page}/{max_pages}")
 
-            # Construir URL com parâmetros (adaptar conforme API real)
             url = f"{self.base_url}?page={page}"
 
             html_content = self.fetch_page(url)
@@ -152,27 +165,35 @@ class DJECollector:
 
         return all_decisions
 
-    def save_decisions(self, decisions: List[Dict[str, str]], filename: Optional[str] = None):
-        """
-        Salva decisões em arquivo JSON
+    def save_decisions(
+        self,
+        decisions: list[dict[str, str]],
+        filename: str | None = None,
+    ) -> Path:
+        """Salva decisões em arquivo JSON.
 
         Args:
-            decisions: Lista de decisões
-            filename: Nome do arquivo (opcional)
+            decisions: Lista de decisões a salvar.
+            filename: Nome do arquivo (gerado automaticamente se não fornecido).
+
+        Returns:
+            Caminho do arquivo salvo.
         """
         if not filename:
-            filename = f"decisions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"decisions_{timestamp}.json"
 
         output_path = settings.RAW_DATA_DIR / filename
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(decisions, f, ensure_ascii=False, indent=2)
 
         logger.info(f"Salvas {len(decisions)} decisões em {output_path}")
+        return output_path
 
 
-def main():
-    """Função principal para teste"""
+def main() -> None:
+    """Função principal para execução direta do módulo."""
     collector = DJECollector()
     decisions = collector.collect_decisions(max_pages=5)
     collector.save_decisions(decisions)
