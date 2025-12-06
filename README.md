@@ -102,63 +102,6 @@ Exemplo de sessão:
 
 🔍 Processando consulta...
 
-================================================================================
-RESULTADO DA ANÁLISE
-================================================================================
-
-Pergunta: Quais são os requisitos para registro de candidatura?
-
---------------------------------------------------------------------------------
-
-Resposta:
-[Resposta gerada pelo sistema com base na jurisprudência]
-
---------------------------------------------------------------------------------
-
-Fontes consultadas:
-1. Acórdão TSE 123.456 - Registro de Candidatura
-   Relevância: 0.92
-   Número: 123.456
-   Ano: 2023
-...
-```
-
-### Consulta Direta
-
-Para fazer uma consulta única:
-
-```bash
-python main.py --query "Qual o prazo para prestação de contas?"
-```
-
-### Configuração da Base de Dados
-
-Para reconfigurar a base de dados com mais documentos por tribunal:
-
-```bash
-# Mais documentos de cada tribunal
-python main.py --setup --max-docs 5
-
-# Apenas tribunais específicos
-python main.py --setup --tribunals TRE-MG,TRE-RJ --max-docs 10
-```
-
-### Consulta por Tribunal Específico
-
-```bash
-# Consulta apenas no TRE-MG
-python main.py --query "Requisitos de candidatura" --tribunal TRE-MG
-
-# No modo interativo, use colchetes
-python main.py --interactive
-> [TRE-RJ] Casos de propaganda eleitoral no Rio
-```
-
-## 🎓 Guia de Tribunais
-
-Para um guia completo sobre como usar os múltiplos tribunais, consulte:
-[📚 Guia de Uso - Múltiplos Tribunais](docs/GUIA_TRIBUNAIS.md)
-
 ## 📁 Estrutura do Projeto
 
 ```
