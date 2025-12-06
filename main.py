@@ -8,6 +8,7 @@ from pathlib import Path
 from src.models import RAGSystem
 from src.scraper import DJEScraper
 from src.embeddings import DocumentProcessor
+from src.analyzers import ContradictionDetector, ReportGenerator
 from src.utils import (
     format_result,
     save_result,
@@ -122,6 +123,79 @@ def query_system(question: str, tribunal_filter: str = None, save: bool = False)
     if save:
         filepath = save_result(result, PROCESSED_DATA_DIR)
         print(f"💾 Resultado salvo em: {filepath}")
+
+
+def detect_contradictions_cmd(
+    query: str,
+    similarity_threshold: float = 0.75,
+    max_cases: int = 50,
+    tribunals: list = None,
+    export_format: str = None
+):
+    """
+    Detecta contradições jurisprudenciais
+
+    Args:
+        query: Consulta/tema para análise
+        similarity_threshold: Limiar de similaridade (0.0 a 1.0)
+        max_cases: Número máximo de casos a analisar
+        tribunals: Lista de tribunais para filtrar
+        export_format: Formato de exportação ('md', 'json' ou None)
+    """
+    print_banner()
+    print("\n🔍 DETECTOR DE CONTRADIÇÕES JURISPRUDENCIAIS")
+    print("=" * 100)
+
+    # Inicializar RAG
+    rag = RAGSystem()
+
+    # Verificar se há documentos
+    stats = rag.get_stats()
+    if stats['total_documents'] == 0:
+        print("\n⚠️  Base de dados vazia!")
+        print("Execute primeiro: python main.py --setup")
+        return
+
+    print(f"\n📊 Base de dados: {stats['total_documents']} documentos")
+
+    # Inicializar detector
+    detector = ContradictionDetector(rag.collection)
+
+    # Detectar contradições
+    report = detector.detect_contradictions(
+        query=query,
+        similarity_threshold=similarity_threshold,
+        max_cases=max_cases,
+        tribunal_filter=tribunals
+    )
+
+    # Gerar e exibir relatório
+    print("\n")
+    formatted_report = ReportGenerator.format_terminal_report(report)
+    print(formatted_report)
+
+    # Exportar se solicitado
+    if export_format:
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        if export_format == 'md':
+            filepath = PROCESSED_DATA_DIR / f"contradictions_{timestamp}.md"
+            ReportGenerator.export_to_markdown(report, str(filepath))
+        elif export_format == 'json':
+            filepath = PROCESSED_DATA_DIR / f"contradictions_{timestamp}.json"
+            ReportGenerator.export_to_json(report, str(filepath))
+
+    # Gerar alertas para contradições críticas
+    critical = report.get_critical_contradictions()
+    if critical:
+        print("\n" + "=" * 100)
+        print("🚨 ALERTAS CRÍTICOS")
+        print("=" * 100)
+
+        alerts = detector.create_alerts(critical, priority_threshold="alta")
+        for alert in alerts[:3]:  # Mostrar no máximo 3 alertas
+            print(ReportGenerator.format_alert(alert))
 
 
 def interactive_mode():
@@ -243,6 +317,34 @@ def main():
         help='Usar raspagem real dos sites (experimental, com fallback para exemplos)'
     )
 
+    parser.add_argument(
+        '--detect-contradictions',
+        type=str,
+        metavar='QUERY',
+        help='Detecta contradições jurisprudenciais para um tema/consulta específica'
+    )
+
+    parser.add_argument(
+        '--similarity',
+        type=float,
+        default=0.75,
+        help='Limiar de similaridade para detecção (0.0 a 1.0, padrão: 0.75)'
+    )
+
+    parser.add_argument(
+        '--max-cases',
+        type=int,
+        default=50,
+        help='Número máximo de casos a analisar (padrão: 50)'
+    )
+
+    parser.add_argument(
+        '--export',
+        type=str,
+        choices=['md', 'json'],
+        help='Exportar relatório de contradições (md=Markdown, json=JSON)'
+    )
+
     args = parser.parse_args()
 
     # Validar API key
@@ -267,6 +369,24 @@ def main():
                 return 1
 
         setup_database(max_docs=args.max_docs, tribunals=tribunals, use_scraping=args.scrape)
+    elif args.detect_contradictions:
+        tribunals = None
+        if args.tribunals:
+            tribunals = [t.strip().upper() for t in args.tribunals.split(',')]
+            # Validar tribunais
+            invalid = [t for t in tribunals if t not in AVAILABLE_TRIBUNALS]
+            if invalid:
+                print(f"\n❌ Tribunais inválidos: {', '.join(invalid)}")
+                print(f"Tribunais disponíveis: {', '.join(AVAILABLE_TRIBUNALS)}")
+                return 1
+
+        detect_contradictions_cmd(
+            query=args.detect_contradictions,
+            similarity_threshold=args.similarity,
+            max_cases=args.max_cases,
+            tribunals=tribunals,
+            export_format=args.export
+        )
     elif args.query:
         tribunal_filter = None
         if args.tribunal:

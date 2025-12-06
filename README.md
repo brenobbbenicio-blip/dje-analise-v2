@@ -18,11 +18,13 @@ O **DJE Análise v2** é um sistema inteligente que utiliza técnicas de Intelig
 ### 🌟 Características
 
 - **RAG Avançado**: Utiliza embeddings e busca vetorial para recuperação de informações relevantes
+- **🔍 Detector de Contradições**: IA que identifica automaticamente decisões contraditórias entre tribunais (NOVO!)
 - **Cobertura Nacional**: TSE + 8 TREs (Regiões Norte, Sul e Sudeste)
 - **Interface CLI**: Interface de linha de comando intuitiva e interativa
 - **Processamento Inteligente**: Divisão automática de documentos em chunks otimizados
 - **Filtros por Tribunal**: Consulte jurisprudência de tribunais específicos ou por região
 - **Fonte Citada**: Todas as respostas incluem referências às decisões consultadas
+- **Raspagem Real**: Suporte a coleta direta dos sites dos tribunais (experimental)
 - **Extensível**: Arquitetura modular que permite fácil expansão
 
 ### 🏛️ Tribunais Suportados
@@ -162,6 +164,42 @@ python main.py --query "Requisitos de candidatura" --tribunal TRE-MG
 python main.py --interactive
 > [TRE-RJ] Casos de propaganda eleitoral no Rio
 ```
+
+### 🔍 Detector de Contradições (NOVO!)
+
+Identifica automaticamente decisões contraditórias entre tribunais usando IA:
+
+```bash
+# Detectar contradições sobre um tema
+python main.py --detect-contradictions "registro de candidatura"
+
+# Com configurações avançadas
+python main.py --detect-contradictions "propaganda eleitoral" \
+    --similarity 0.80 \
+    --max-cases 100 \
+    --export md
+
+# Filtrar por tribunais específicos
+python main.py --detect-contradictions "inelegibilidade" \
+    --tribunals TRE-MG,TRE-RJ,TRE-SP
+```
+
+**O que o detector faz:**
+- ✅ Identifica casos similares de tribunais diferentes
+- ✅ Detecta decisões opostas (provido vs não provido, etc.)
+- ✅ Analisa contradições usando IA (GPT)
+- ✅ Classifica gravidade (baixa, média, alta, crítica)
+- ✅ Gera relatórios detalhados e acionáveis
+- ✅ Exporta para Markdown ou JSON
+
+**Por que é genial:**
+- 🚀 Economiza dias de pesquisa manual
+- 🎯 Descobre precedentes favoráveis que passariam despercebidos
+- ⚖️ Identifica divergências jurisprudenciais automaticamente
+- 💡 Fornece recomendações estratégicas para cada contradição
+
+Para documentação completa:
+[📚 Guia do Detector de Contradições](docs/DETECTOR_CONTRADICOES.md)
 
 ## 🎓 Guia de Tribunais
 
