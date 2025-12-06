@@ -61,6 +61,10 @@ logs/
 htmlcov/
 .tox/
 
+# Benchmark results
+benchmarks/*.json
+benchmarks/__pycache__/
+
 # Documentation
 docs/_build/
 site/
