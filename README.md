@@ -18,22 +18,31 @@ O **DJE Análise v2** é um sistema inteligente que utiliza técnicas de Intelig
 ### 🌟 Características
 
 - **RAG Avançado**: Utiliza embeddings e busca vetorial para recuperação de informações relevantes
-- **Múltiplos Tribunais**: Suporte a TSE, TRE-MG, TRE-RJ, TRE-PR e TRE-SC
+- **Cobertura Nacional**: TSE + 8 TREs (Regiões Norte, Sul e Sudeste)
 - **Interface CLI**: Interface de linha de comando intuitiva e interativa
 - **Processamento Inteligente**: Divisão automática de documentos em chunks otimizados
-- **Filtros por Tribunal**: Consulte jurisprudência de tribunais específicos
+- **Filtros por Tribunal**: Consulte jurisprudência de tribunais específicos ou por região
 - **Fonte Citada**: Todas as respostas incluem referências às decisões consultadas
 - **Extensível**: Arquitetura modular que permite fácil expansão
 
 ### 🏛️ Tribunais Suportados
 
-| Tribunal | Sigla | Estado | Status |
-|----------|-------|--------|--------|
-| Tribunal Superior Eleitoral | TSE | Nacional | ✅ Disponível |
-| TRE Minas Gerais | TRE-MG | MG | ✅ Disponível |
-| TRE Rio de Janeiro | TRE-RJ | RJ | ✅ Disponível |
-| TRE Paraná | TRE-PR | PR | ✅ Disponível |
-| TRE Santa Catarina | TRE-SC | SC | ✅ Disponível |
+| Tribunal | Sigla | Estado | Região | Status |
+|----------|-------|--------|--------|--------|
+| Tribunal Superior Eleitoral | TSE | Nacional | - | ✅ Disponível |
+| **Região Norte** | | | | |
+| TRE Pará | TRE-PA | PA | Norte | ✅ Disponível |
+| TRE Amazonas | TRE-AM | AM | Norte | ✅ Disponível |
+| TRE Rondônia | TRE-RO | RO | Norte | ✅ Disponível |
+| TRE Amapá | TRE-AP | AP | Norte | ✅ Disponível |
+| **Região Sul** | | | | |
+| TRE Paraná | TRE-PR | PR | Sul | ✅ Disponível |
+| TRE Santa Catarina | TRE-SC | SC | Sul | ✅ Disponível |
+| **Região Sudeste** | | | | |
+| TRE Minas Gerais | TRE-MG | MG | Sudeste | ✅ Disponível |
+| TRE Rio de Janeiro | TRE-RJ | RJ | Sudeste | ✅ Disponível |
+
+**Total: 9 tribunais** (1 TSE + 8 TREs cobrindo 3 regiões do Brasil)
 
 ## 🚀 Instalação
 

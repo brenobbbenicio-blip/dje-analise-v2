@@ -161,5 +161,143 @@ TRE_EXAMPLE_DOCUMENTS = {
                 'city': 'Joinville'
             }
         },
+    ],
+    "TRE-PA": [
+        {
+            'title': 'Acórdão TRE-PA 67.123 - Registro Belém',
+            'text': """REGISTRO DE CANDIDATURA. ELEIÇÕES MUNICIPAIS. BELÉM/PA.
+            O candidato deve comprovar filiação partidária há pelo menos seis meses antes
+            das eleições, conforme determina a legislação eleitoral. No caso dos autos,
+            verificou-se a regularidade da filiação partidária do candidato em Belém do Pará.
+            A documentação apresentada está de acordo com os requisitos legais estabelecidos
+            pela Justiça Eleitoral. Registro deferido.""",
+            'metadata': {
+                'number': '67.123',
+                'year': 2023,
+                'type': 'Acórdão',
+                'tema': 'Registro de Candidatura',
+                'city': 'Belém'
+            }
+        },
+        {
+            'title': 'Acórdão TRE-PA 78.456 - Propaganda Santarém',
+            'text': """REPRESENTAÇÃO. PROPAGANDA ELEITORAL IRREGULAR. SANTARÉM/PA.
+            A propaganda eleitoral deve respeitar os limites estabelecidos pela legislação,
+            especialmente no que tange ao uso de bens públicos. Verificado no caso em análise
+            a utilização indevida de espaço público para fixação de material de campanha
+            em Santarém, no estado do Pará. Aplicação de multa ao candidato e determinação
+            de remoção imediata do material irregular. Representação procedente.""",
+            'metadata': {
+                'number': '78.456',
+                'year': 2023,
+                'type': 'Acórdão',
+                'tema': 'Propaganda Eleitoral',
+                'city': 'Santarém'
+            }
+        },
+    ],
+    "TRE-RO": [
+        {
+            'title': 'Acórdão TRE-RO 89.234 - Prestação Contas Porto Velho',
+            'text': """PRESTAÇÃO DE CONTAS. CAMPANHA ELEITORAL. PORTO VELHO/RO.
+            A prestação de contas deve ser apresentada no prazo legal e conter todos os
+            documentos que comprovem as receitas e despesas de campanha. No caso em análise,
+            relativo às eleições municipais de Porto Velho, capital de Rondônia, foram
+            apresentados tempestivamente todos os documentos exigidos pela Justiça Eleitoral.
+            Contas aprovadas.""",
+            'metadata': {
+                'number': '89.234',
+                'year': 2023,
+                'type': 'Acórdão',
+                'tema': 'Prestação de Contas',
+                'city': 'Porto Velho'
+            }
+        },
+        {
+            'title': 'Acórdão TRE-RO 90.567 - Abuso Poder Ji-Paraná',
+            'text': """AÇÃO DE INVESTIGAÇÃO JUDICIAL ELEITORAL. ABUSO DE PODER POLÍTICO.
+            JI-PARANÁ/RO. Configurado o abuso de poder político mediante utilização da
+            máquina pública em favor de candidatura nas eleições municipais. A jurisprudência
+            do TRE-RO é firme quanto à necessidade de coibir práticas que desequilibrem
+            o pleito eleitoral em Rondônia. Comprovadas as irregularidades na utilização
+            de recursos públicos em Ji-Paraná. AIJE julgada procedente.""",
+            'metadata': {
+                'number': '90.567',
+                'year': 2022,
+                'type': 'Acórdão',
+                'tema': 'Abuso de Poder',
+                'city': 'Ji-Paraná'
+            }
+        },
+    ],
+    "TRE-AM": [
+        {
+            'title': 'Acórdão TRE-AM 12.789 - Registro Manaus',
+            'text': """REGISTRO DE CANDIDATURA. ELEIÇÕES MUNICIPAIS. MANAUS/AM.
+            O candidato deve apresentar toda a documentação exigida pela legislação
+            eleitoral, incluindo certidões de quitação eleitoral e certidões criminais.
+            No caso em exame, candidatura às eleições municipais de Manaus, capital do
+            Amazonas, foram apresentados todos os documentos necessários. Verificada a
+            regularidade da situação do candidato perante a Justiça Eleitoral.
+            Registro deferido.""",
+            'metadata': {
+                'number': '12.789',
+                'year': 2023,
+                'type': 'Acórdão',
+                'tema': 'Registro de Candidatura',
+                'city': 'Manaus'
+            }
+        },
+        {
+            'title': 'Acórdão TRE-AM 23.901 - Inelegibilidade Parintins',
+            'text': """RECURSO ORDINÁRIO. INELEGIBILIDADE. CONDENAÇÃO CRIMINAL. PARINTINS/AM.
+            A condenação criminal por crime eleitoral, transitada em julgado, acarreta
+            inelegibilidade pelo prazo de 8 anos, nos termos da Lei Complementar nº 64/90.
+            No caso dos autos, referente a candidato do município de Parintins no Amazonas,
+            restou comprovada a condenação definitiva. A inelegibilidade é automática e
+            decorre diretamente da lei. Recurso não provido.""",
+            'metadata': {
+                'number': '23.901',
+                'year': 2022,
+                'type': 'Acórdão',
+                'tema': 'Inelegibilidade',
+                'city': 'Parintins'
+            }
+        },
+    ],
+    "TRE-AP": [
+        {
+            'title': 'Acórdão TRE-AP 34.012 - Propaganda Macapá',
+            'text': """REPRESENTAÇÃO. PROPAGANDA ELEITORAL ANTECIPADA. MACAPÁ/AP.
+            Caracteriza propaganda eleitoral antecipada a divulgação de pré-candidatura
+            antes do prazo legal estabelecido pela legislação eleitoral. No caso em análise,
+            relativo às eleições na capital do Amapá, Macapá, restou comprovada a veiculação
+            de material com pedido explícito de voto antes do período permitido. Aplicação
+            de multa ao candidato. Representação julgada procedente.""",
+            'metadata': {
+                'number': '34.012',
+                'year': 2023,
+                'type': 'Acórdão',
+                'tema': 'Propaganda Eleitoral',
+                'city': 'Macapá'
+            }
+        },
+        {
+            'title': 'Acórdão TRE-AP 45.234 - Registro Santana',
+            'text': """REGISTRO DE CANDIDATURA. CONDIÇÕES DE ELEGIBILIDADE. SANTANA/AP.
+            O candidato deve preencher todas as condições de elegibilidade previstas na
+            Constituição Federal e na legislação infraconstitucional. No caso em exame,
+            candidatura ao cargo de vereador no município de Santana, estado do Amapá,
+            verificou-se o cumprimento de todos os requisitos legais. A idade mínima,
+            filiação partidária e quitação eleitoral estão devidamente comprovadas.
+            Registro deferido.""",
+            'metadata': {
+                'number': '45.234',
+                'year': 2023,
+                'type': 'Acórdão',
+                'tema': 'Registro de Candidatura',
+                'city': 'Santana'
+            }
+        },
     ]
 }

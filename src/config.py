@@ -66,6 +66,30 @@ TRE_CONFIGS = {
         "url": "https://www.tre-sc.jus.br/jurisprudencia",
         "abbreviation": "TRE-SC",
         "state": "SC"
+    },
+    "TRE-PA": {
+        "name": "Tribunal Regional Eleitoral do Pará",
+        "url": "https://www.tre-pa.jus.br/jurisprudencia",
+        "abbreviation": "TRE-PA",
+        "state": "PA"
+    },
+    "TRE-RO": {
+        "name": "Tribunal Regional Eleitoral de Rondônia",
+        "url": "https://www.tre-ro.jus.br/jurisprudencia",
+        "abbreviation": "TRE-RO",
+        "state": "RO"
+    },
+    "TRE-AM": {
+        "name": "Tribunal Regional Eleitoral do Amazonas",
+        "url": "https://www.tre-am.jus.br/jurisprudencia",
+        "abbreviation": "TRE-AM",
+        "state": "AM"
+    },
+    "TRE-AP": {
+        "name": "Tribunal Regional Eleitoral do Amapá",
+        "url": "https://www.tre-ap.jus.br/jurisprudencia",
+        "abbreviation": "TRE-AP",
+        "state": "AP"
     }
 }
 
