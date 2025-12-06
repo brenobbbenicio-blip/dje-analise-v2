@@ -7,6 +7,29 @@ O sistema DJE Análise v2 suporta dois modos de operação:
 1. **Modo Exemplos** (padrão) - Usa documentos de exemplo pré-configurados
 2. **Modo Raspagem Real** (experimental) - Tenta coletar jurisprudência real dos sites dos tribunais
 
+## ✅ Tribunais com Raspagem Implementada
+
+A raspagem real está implementada para **TODOS os 9 tribunais**:
+
+### Nacional
+- **TSE** - Tribunal Superior Eleitoral
+
+### Região Norte
+- **TRE-PA** - Tribunal Regional Eleitoral do Pará
+- **TRE-RO** - Tribunal Regional Eleitoral de Rondônia
+- **TRE-AM** - Tribunal Regional Eleitoral do Amazonas
+- **TRE-AP** - Tribunal Regional Eleitoral do Amapá
+
+### Região Sudeste
+- **TRE-MG** - Tribunal Regional Eleitoral de Minas Gerais
+- **TRE-RJ** - Tribunal Regional Eleitoral do Rio de Janeiro
+
+### Região Sul
+- **TRE-PR** - Tribunal Regional Eleitoral do Paraná
+- **TRE-SC** - Tribunal Regional Eleitoral de Santa Catarina
+
+Cada tribunal possui **padrões de URL específicos** configurados para maximizar as chances de sucesso na raspagem.
+
 ## 🚀 Como Usar Raspagem Real
 
 ### Setup com Raspagem Real
@@ -55,14 +78,25 @@ O parser tenta múltiplos padrões de HTML:
 
 ### URLs Tentadas
 
-Para cada tribunal, o sistema tenta:
+Cada tribunal possui padrões de URL específicos configurados em `src/config.py`. Por exemplo:
 
+**TSE:**
+```
+https://www.tse.jus.br/jurisprudencia/busca?q={termo}
+https://www.tse.jus.br/jurisprudencia/jurisprudencia/busca?termo={termo}
+https://www.tse.jus.br/jurisprudencia/pesquisa?texto={termo}
+https://www.tse.jus.br/jurisprudencia?s={termo}
+```
+
+**TREs (Padrão geral):**
 ```
 {base_url}/busca?q={termo}
-{base_url}/jurisprudencia/busca?termo={termo}
-{base_url}/pesquisa?texto={termo}
+{base_url}/pesquisa?termo={termo}
+{base_url}/consulta?texto={termo}
 {base_url}?s={termo}
 ```
+
+O sistema tenta cada URL sequencialmente até encontrar resultados ou esgotar todas as opções.
 
 ## 📊 Metadados
 
@@ -120,16 +154,27 @@ Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
 
 ## 🛠️ Customização
 
-### Adicionar Novos Padrões de URL
+### Adicionar Novos Padrões de URL para um Tribunal
 
-Edite `src/scraper/dje_scraper.py`:
+Os padrões de URL são configurados em `src/config.py` dentro de `TRE_CONFIGS`. Para customizar um tribunal específico:
 
 ```python
-search_urls = [
-    f"{self.base_url}/busca?q={search_term}",
-    f"{self.base_url}/seu-padrao-aqui",  # Adicione aqui
-]
+"TRE-PA": {
+    "name": "Tribunal Regional Eleitoral do Pará",
+    "url": "https://www.tre-pa.jus.br/jurisprudencia",
+    "abbreviation": "TRE-PA",
+    "state": "PA",
+    "search_patterns": [
+        "/busca?q={term}",           # Padrão 1
+        "/pesquisa?termo={term}",    # Padrão 2
+        "/consulta?texto={term}",    # Padrão 3
+        "/seu-novo-padrao?x={term}", # Adicione aqui!
+        "?s={term}"
+    ]
+}
 ```
+
+O scraper tentará cada padrão na ordem até encontrar resultados.
 
 ### Melhorar Parser
 
@@ -208,6 +253,28 @@ Para melhorar a raspagem:
 2. Adicione seletores em `html_parser.py`
 3. Teste com `--scrape`
 4. Envie PR com melhorias
+
+## 🧪 Testando a Raspagem
+
+### Testar Todos os TREs
+
+Para verificar se a raspagem está funcionando em todos os tribunais:
+
+```bash
+python tests/test_scraping_all_tres.py
+```
+
+Este script:
+- Testa a raspagem em todos os 9 tribunais
+- Mostra quais tribunais conseguiram fazer raspagem real
+- Indica quais usaram fallback para exemplos
+- Fornece um resumo completo dos resultados
+
+### Testar Tribunal Específico
+
+```bash
+python main.py --setup --tribunals TRE-PA --scrape --max-docs 2
+```
 
 ## 📚 Exemplos Práticos
 

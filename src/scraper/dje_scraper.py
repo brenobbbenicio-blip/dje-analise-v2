@@ -122,13 +122,18 @@ class DJEScraper:
         """
         documents = []
 
-        # Construir URL de busca (adaptável para diferentes tribunais)
-        # Padrões comuns de URL de busca em sites de tribunais
+        # Obter padrões de URL específicos do tribunal
+        search_patterns = self.tribunal_config.get('search_patterns', [
+            "/busca?q={term}",
+            "/jurisprudencia/busca?termo={term}",
+            "/pesquisa?texto={term}",
+            "?s={term}"
+        ])
+
+        # Construir URLs de busca usando os padrões do tribunal
         search_urls = [
-            f"{self.base_url}/busca?q={search_term}",
-            f"{self.base_url}/jurisprudencia/busca?termo={search_term}",
-            f"{self.base_url}/pesquisa?texto={search_term}",
-            f"{self.base_url}?s={search_term}",
+            f"{self.base_url}{pattern.format(term=search_term)}"
+            for pattern in search_patterns
         ]
 
         # Tentar cada padrão de URL
