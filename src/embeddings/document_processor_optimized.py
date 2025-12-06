@@ -18,6 +18,9 @@ from src.config import CHUNK_SIZE, CHUNK_OVERLAP
 
 
 # Numba-optimized keyword extraction
+# NOTE: This function is available for very large texts (100K+ words)
+# For smaller texts, the overhead of Numba compilation makes Counter faster
+# Use extract_keywords_numba() method for large-scale text processing
 @jit(nopython=True, parallel=True, cache=True)
 def count_word_frequencies_numba(word_ids: np.ndarray) -> np.ndarray:
     """
@@ -44,11 +47,14 @@ class DocumentProcessorOptimized:
     
     Performance improvements:
     - Batch text processing with vectorization
-    - Numba JIT for numeric computations
+    - Numba JIT for numeric computations (available via extract_keywords_numba)
     - Multiprocessing for CPU-bound tasks
     - Compiled regex patterns
     - Pre-allocated arrays and caching
     """
+    
+    # OpenAI API batch size limit
+    EMBEDDING_BATCH_SIZE = 100
     
     def __init__(
         self,

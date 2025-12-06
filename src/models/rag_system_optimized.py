@@ -61,6 +61,9 @@ class RAGSystemOptimized:
     - Efficient memory management
     """
     
+    # OpenAI API batch size limit
+    EMBEDDING_BATCH_SIZE = 100
+    
     def __init__(self, cache_size: int = 1000, use_cache: bool = True):
         """
         Initialize optimized RAG system
@@ -90,7 +93,8 @@ class RAGSystemOptimized:
             self.collection = self.chroma_client.get_collection(
                 name=CHROMA_COLLECTION_NAME
             )
-        except:
+        except ValueError:
+            # Collection doesn't exist, create it
             self.collection = self.chroma_client.create_collection(
                 name=CHROMA_COLLECTION_NAME,
                 metadata={"description": "Jurisprudência eleitoral brasileira"}
@@ -196,7 +200,7 @@ class RAGSystemOptimized:
         if texts_to_fetch:
             # OpenAI supports batch embedding generation (up to 100 texts)
             # Split into batches if needed
-            batch_size = 100
+            batch_size = self.EMBEDDING_BATCH_SIZE
             
             for batch_start in range(0, len(texts_to_fetch), batch_size):
                 batch_end = min(batch_start + batch_size, len(texts_to_fetch))
