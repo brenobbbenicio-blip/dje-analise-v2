@@ -79,22 +79,34 @@ class RAGSystem:
             ids=ids
         )
 
-    def search(self, query: str, n_results: int = 5) -> List[Dict]:
+    def search(
+        self,
+        query: str,
+        n_results: int = 5,
+        tribunal_filter: Optional[str] = None
+    ) -> List[Dict]:
         """
         Busca documentos relevantes
 
         Args:
             query: Consulta do usuário
             n_results: Número de resultados a retornar
+            tribunal_filter: Filtrar por tribunal específico (opcional)
 
         Returns:
             Lista de documentos relevantes com metadados
         """
         query_embedding = self.get_embedding(query)
 
+        # Preparar filtro se tribunal foi especificado
+        where_filter = None
+        if tribunal_filter:
+            where_filter = {"tribunal": tribunal_filter}
+
         results = self.collection.query(
             query_embeddings=[query_embedding],
-            n_results=n_results
+            n_results=n_results,
+            where=where_filter
         )
 
         documents = []
@@ -155,38 +167,74 @@ Responda de forma clara e objetiva, citando os trechos relevantes da jurisprudê
 
         return response.choices[0].message.content
 
-    def query(self, question: str, n_results: int = 5) -> Dict:
+    def query(
+        self,
+        question: str,
+        n_results: int = 5,
+        tribunal_filter: Optional[str] = None
+    ) -> Dict:
         """
         Pipeline completo de consulta RAG
 
         Args:
             question: Pergunta do usuário
             n_results: Número de documentos a recuperar
+            tribunal_filter: Filtrar por tribunal específico (opcional)
 
         Returns:
             Dicionário com resposta e documentos fonte
         """
         # 1. Buscar documentos relevantes
-        relevant_docs = self.search(question, n_results=n_results)
+        relevant_docs = self.search(
+            question,
+            n_results=n_results,
+            tribunal_filter=tribunal_filter
+        )
 
         # 2. Gerar resposta
         answer = self.generate_answer(question, relevant_docs)
 
-        return {
+        result = {
             'answer': answer,
             'sources': relevant_docs,
             'query': question
         }
 
-    def get_stats(self) -> Dict:
+        if tribunal_filter:
+            result['tribunal_filter'] = tribunal_filter
+
+        return result
+
+    def get_stats(self, by_tribunal: bool = False) -> Dict:
         """
         Retorna estatísticas da base de dados
+
+        Args:
+            by_tribunal: Se True, retorna contagem por tribunal
 
         Returns:
             Dicionário com estatísticas
         """
         count = self.collection.count()
-        return {
+        stats = {
             'total_documents': count,
             'collection_name': CHROMA_COLLECTION_NAME
         }
+
+        if by_tribunal and count > 0:
+            # Contar documentos por tribunal
+            from src.config import AVAILABLE_TRIBUNALS
+
+            tribunal_counts = {}
+            for tribunal in AVAILABLE_TRIBUNALS:
+                try:
+                    results = self.collection.get(
+                        where={"tribunal": tribunal}
+                    )
+                    tribunal_counts[tribunal] = len(results['ids'])
+                except:
+                    tribunal_counts[tribunal] = 0
+
+            stats['by_tribunal'] = tribunal_counts
+
+        return stats

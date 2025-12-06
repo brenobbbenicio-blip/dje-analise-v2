@@ -18,10 +18,22 @@ O **DJE Análise v2** é um sistema inteligente que utiliza técnicas de Intelig
 ### 🌟 Características
 
 - **RAG Avançado**: Utiliza embeddings e busca vetorial para recuperação de informações relevantes
+- **Múltiplos Tribunais**: Suporte a TSE, TRE-MG, TRE-RJ, TRE-PR e TRE-SC
 - **Interface CLI**: Interface de linha de comando intuitiva e interativa
 - **Processamento Inteligente**: Divisão automática de documentos em chunks otimizados
+- **Filtros por Tribunal**: Consulte jurisprudência de tribunais específicos
 - **Fonte Citada**: Todas as respostas incluem referências às decisões consultadas
 - **Extensível**: Arquitetura modular que permite fácil expansão
+
+### 🏛️ Tribunais Suportados
+
+| Tribunal | Sigla | Estado | Status |
+|----------|-------|--------|--------|
+| Tribunal Superior Eleitoral | TSE | Nacional | ✅ Disponível |
+| TRE Minas Gerais | TRE-MG | MG | ✅ Disponível |
+| TRE Rio de Janeiro | TRE-RJ | RJ | ✅ Disponível |
+| TRE Paraná | TRE-PR | PR | ✅ Disponível |
+| TRE Santa Catarina | TRE-SC | SC | ✅ Disponível |
 
 ## 🚀 Instalação
 
@@ -66,7 +78,11 @@ cp .env.example .env
 
 5. **Configure a base de dados inicial**
 ```bash
+# Coletar de todos os tribunais (TSE + TREs)
 python main.py --setup
+
+# Ou apenas de tribunais específicos
+python main.py --setup --tribunals TSE,TRE-MG
 ```
 
 ## 💻 Como Usar
@@ -117,11 +133,31 @@ python main.py --query "Qual o prazo para prestação de contas?"
 
 ### Configuração da Base de Dados
 
-Para reconfigurar a base de dados com mais documentos:
+Para reconfigurar a base de dados com mais documentos por tribunal:
 
 ```bash
-python main.py --setup --max-docs 50
+# Mais documentos de cada tribunal
+python main.py --setup --max-docs 5
+
+# Apenas tribunais específicos
+python main.py --setup --tribunals TRE-MG,TRE-RJ --max-docs 10
 ```
+
+### Consulta por Tribunal Específico
+
+```bash
+# Consulta apenas no TRE-MG
+python main.py --query "Requisitos de candidatura" --tribunal TRE-MG
+
+# No modo interativo, use colchetes
+python main.py --interactive
+> [TRE-RJ] Casos de propaganda eleitoral no Rio
+```
+
+## 🎓 Guia de Tribunais
+
+Para um guia completo sobre como usar os múltiplos tribunais, consulte:
+[📚 Guia de Uso - Múltiplos Tribunais](docs/GUIA_TRIBUNAIS.md)
 
 ## 📁 Estrutura do Projeto
 

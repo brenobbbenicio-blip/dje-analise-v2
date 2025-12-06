@@ -14,55 +14,86 @@ from src.utils import (
     print_banner,
     validate_api_key
 )
-from src.config import OPENAI_API_KEY, PROCESSED_DATA_DIR
+from src.config import (
+    OPENAI_API_KEY,
+    PROCESSED_DATA_DIR,
+    AVAILABLE_TRIBUNALS,
+    TRE_CONFIGS
+)
 
 
-def setup_database(max_docs: int = 10):
+def setup_database(max_docs: int = 2, tribunals: list = None):
     """
     Configura a base de dados com documentos de exemplo
 
     Args:
-        max_docs: Número máximo de documentos a coletar
+        max_docs: Número máximo de documentos por tribunal
+        tribunals: Lista de tribunais a coletar (None = todos)
     """
     print("\n🔧 Configurando base de dados...")
 
+    if tribunals is None:
+        tribunals = AVAILABLE_TRIBUNALS
+        print(f"📋 Coletando de todos os tribunais: {', '.join(tribunals)}")
+    else:
+        print(f"📋 Tribunais selecionados: {', '.join(tribunals)}")
+
     # Inicializar componentes
-    scraper = DJEScraper()
     processor = DocumentProcessor()
     rag = RAGSystem()
 
-    # Coletar documentos
-    print("\n📥 Coletando documentos de jurisprudência...")
-    documents = scraper.scrape_search_results(
-        search_term="eleições",
-        max_results=max_docs
-    )
+    all_documents = []
 
-    # Salvar documentos brutos
-    scraper.save_documents(documents, "jurisprudencia_raw.json")
+    # Coletar de cada tribunal
+    print(f"\n📥 Coletando {max_docs} documentos de cada tribunal...")
+    print("=" * 80)
 
-    # Processar documentos
-    print("\n⚙️  Processando documentos...")
-    processed_docs = processor.process_documents(documents)
+    for tribunal in tribunals:
+        scraper = DJEScraper(tribunal=tribunal)
 
-    # Adicionar ao vectorstore
-    print("\n💾 Adicionando documentos ao vectorstore...")
+        docs = scraper.scrape_search_results(
+            search_term="eleições",
+            max_results=max_docs
+        )
+
+        # Salvar documentos brutos por tribunal
+        filename = f"jurisprudencia_{tribunal.lower()}.json"
+        scraper.save_documents(docs, filename)
+
+        all_documents.extend(docs)
+        print()  # Linha em branco entre tribunais
+
+    print("=" * 80)
+    print(f"\n⚙️  Processando {len(all_documents)} documentos...")
+    processed_docs = processor.process_documents(all_documents)
+
+    print(f"💾 Adicionando documentos ao vectorstore...")
     rag.add_documents(processed_docs)
 
-    stats = rag.get_stats()
+    stats = rag.get_stats(by_tribunal=True)
     print(f"\n✅ Base de dados configurada!")
     print(f"   Total de documentos: {stats['total_documents']}")
 
+    if 'by_tribunal' in stats:
+        print("\n   Documentos por tribunal:")
+        for trib, count in stats['by_tribunal'].items():
+            if count > 0:
+                print(f"   - {trib}: {count} documentos")
 
-def query_system(question: str, save: bool = False):
+
+def query_system(question: str, tribunal_filter: str = None, save: bool = False):
     """
     Realiza consulta no sistema
 
     Args:
         question: Pergunta do usuário
+        tribunal_filter: Filtrar por tribunal específico
         save: Se deve salvar o resultado
     """
-    print("\n🔍 Processando consulta...")
+    if tribunal_filter:
+        print(f"\n🔍 Processando consulta em {tribunal_filter}...")
+    else:
+        print("\n🔍 Processando consulta em todos os tribunais...")
 
     # Inicializar RAG
     rag = RAGSystem()
@@ -75,7 +106,7 @@ def query_system(question: str, save: bool = False):
         return
 
     # Fazer consulta
-    result = rag.query(question)
+    result = rag.query(question, tribunal_filter=tribunal_filter)
 
     # Formatar e exibir resultado
     formatted = format_result(result)
@@ -101,8 +132,14 @@ def interactive_mode():
     rag = RAGSystem()
 
     # Verificar base de dados
-    stats = rag.get_stats()
+    stats = rag.get_stats(by_tribunal=True)
     print(f"\n📊 Base de dados: {stats['total_documents']} documentos")
+
+    if 'by_tribunal' in stats and any(stats['by_tribunal'].values()):
+        print("\n   Distribuição por tribunal:")
+        for trib, count in stats['by_tribunal'].items():
+            if count > 0:
+                print(f"   - {trib}: {count} documentos")
 
     if stats['total_documents'] == 0:
         print("\n⚠️  Base de dados vazia!")
@@ -115,6 +152,8 @@ def interactive_mode():
 
     print("\n" + "=" * 80)
     print("💡 Modo interativo - Digite 'sair' para encerrar")
+    print("💡 Para filtrar por tribunal, use: [TRIBUNAL] pergunta")
+    print("   Exemplo: [TRE-MG] Quais os requisitos?")
     print("=" * 80)
 
     while True:
@@ -131,7 +170,19 @@ def interactive_mode():
             continue
 
         try:
-            query_system(question, save=True)
+            # Verificar se há filtro de tribunal
+            tribunal_filter = None
+            if question.startswith('[') and ']' in question:
+                end_bracket = question.index(']')
+                tribunal_filter = question[1:end_bracket].upper()
+                question = question[end_bracket+1:].strip()
+
+                if tribunal_filter not in AVAILABLE_TRIBUNALS:
+                    print(f"\n⚠️ Tribunal '{tribunal_filter}' não disponível.")
+                    print(f"Tribunais disponíveis: {', '.join(AVAILABLE_TRIBUNALS)}")
+                    continue
+
+            query_system(question, tribunal_filter=tribunal_filter, save=True)
         except Exception as e:
             print(f"\n❌ Erro ao processar consulta: {e}")
             print("Tente novamente ou digite 'sair' para encerrar.")
@@ -164,8 +215,20 @@ def main():
     parser.add_argument(
         '--max-docs',
         type=int,
-        default=10,
-        help='Número máximo de documentos ao fazer setup (padrão: 10)'
+        default=2,
+        help='Número máximo de documentos por tribunal ao fazer setup (padrão: 2)'
+    )
+
+    parser.add_argument(
+        '--tribunal',
+        type=str,
+        help='Filtrar por tribunal específico (TSE, TRE-MG, TRE-RJ, TRE-PR, TRE-SC)'
+    )
+
+    parser.add_argument(
+        '--tribunals',
+        type=str,
+        help='Lista de tribunais para setup, separados por vírgula (ex: TSE,TRE-MG)'
     )
 
     args = parser.parse_args()
@@ -181,9 +244,27 @@ def main():
 
     # Executar ação solicitada
     if args.setup:
-        setup_database(max_docs=args.max_docs)
+        tribunals = None
+        if args.tribunals:
+            tribunals = [t.strip().upper() for t in args.tribunals.split(',')]
+            # Validar tribunais
+            invalid = [t for t in tribunals if t not in AVAILABLE_TRIBUNALS]
+            if invalid:
+                print(f"\n❌ Tribunais inválidos: {', '.join(invalid)}")
+                print(f"Tribunais disponíveis: {', '.join(AVAILABLE_TRIBUNALS)}")
+                return 1
+
+        setup_database(max_docs=args.max_docs, tribunals=tribunals)
     elif args.query:
-        query_system(args.query, save=True)
+        tribunal_filter = None
+        if args.tribunal:
+            tribunal_filter = args.tribunal.upper()
+            if tribunal_filter not in AVAILABLE_TRIBUNALS:
+                print(f"\n❌ Tribunal '{tribunal_filter}' não disponível.")
+                print(f"Tribunais disponíveis: {', '.join(AVAILABLE_TRIBUNALS)}")
+                return 1
+
+        query_system(args.query, tribunal_filter=tribunal_filter, save=True)
     else:
         # Modo interativo (padrão)
         interactive_mode()

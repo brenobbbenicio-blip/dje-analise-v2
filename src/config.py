@@ -35,6 +35,43 @@ DJE_BASE_URL = "https://www.tse.jus.br/jurisprudencia"
 MAX_DOCUMENTS_PER_SEARCH = 100
 REQUEST_DELAY = 2  # segundos entre requisições
 
+# Configurações dos Tribunais Regionais Eleitorais
+TRE_CONFIGS = {
+    "TSE": {
+        "name": "Tribunal Superior Eleitoral",
+        "url": "https://www.tse.jus.br/jurisprudencia",
+        "abbreviation": "TSE",
+        "state": "Nacional"
+    },
+    "TRE-MG": {
+        "name": "Tribunal Regional Eleitoral de Minas Gerais",
+        "url": "https://www.tre-mg.jus.br/jurisprudencia",
+        "abbreviation": "TRE-MG",
+        "state": "MG"
+    },
+    "TRE-RJ": {
+        "name": "Tribunal Regional Eleitoral do Rio de Janeiro",
+        "url": "https://www.tre-rj.jus.br/jurisprudencia",
+        "abbreviation": "TRE-RJ",
+        "state": "RJ"
+    },
+    "TRE-PR": {
+        "name": "Tribunal Regional Eleitoral do Paraná",
+        "url": "https://www.tre-pr.jus.br/jurisprudencia",
+        "abbreviation": "TRE-PR",
+        "state": "PR"
+    },
+    "TRE-SC": {
+        "name": "Tribunal Regional Eleitoral de Santa Catarina",
+        "url": "https://www.tre-sc.jus.br/jurisprudencia",
+        "abbreviation": "TRE-SC",
+        "state": "SC"
+    }
+}
+
+# Lista de tribunais disponíveis
+AVAILABLE_TRIBUNALS = list(TRE_CONFIGS.keys())
+
 # Configurações de processamento
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 200
