@@ -1,115 +1,211 @@
-# Guia de Contribuição
+# 🤝 Guia de Contribuição
 
-Obrigado por considerar contribuir com o DJE Análise v2! Este documento fornece diretrizes para contribuições.
+Obrigado por considerar contribuir com o DJE Análise v2! Este documento fornece diretrizes para contribuir com o projeto.
 
-## Como Contribuir
+## 📋 Como Contribuir
 
-### Reportar Bugs
+### 1. Reportar Bugs
 
-Se você encontrou um bug:
+Se você encontrou um bug, por favor:
 
-1. Verifique se o bug já foi reportado nas [Issues](https://github.com/brenobbbenicio-blip/dje-analise-v2/issues)
-2. Se não, crie uma nova issue com:
-   - Título claro e descritivo
+1. Verifique se o bug já não foi reportado nas [Issues](https://github.com/brenobbbenicio-blip/dje-analise-v2/issues)
+2. Abra uma nova issue com:
+   - Título descritivo
    - Descrição detalhada do problema
-   - Passos para reproduzir
-   - Comportamento esperado vs atual
-   - Screenshots (se aplicável)
-   - Ambiente (OS, Python version, etc.)
+   - Passos para reproduzir o bug
+   - Comportamento esperado vs observado
+   - Informações do ambiente (OS, versão Python, etc.)
+   - Screenshots se aplicável
 
-### Sugerir Melhorias
+### 2. Sugerir Melhorias
 
-Para sugerir uma nova funcionalidade:
+Para sugerir novas funcionalidades:
 
-1. Abra uma issue com o prefixo `[FEATURE]`
-2. Descreva a funcionalidade desejada
-3. Explique por que seria útil
-4. Considere possíveis implementações
+1. Abra uma issue com a tag `enhancement`
+2. Descreva claramente a funcionalidade desejada
+3. Explique por que ela seria útil para o projeto
+4. Proponha uma possível implementação
 
-### Pull Requests
+### 3. Submeter Pull Requests
 
-1. Fork o repositório
-2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Faça suas alterações
-4. Execute os testes: `pytest`
-5. Execute o linting: `black src/` e `flake8 src/`
-6. Commit suas mudanças (`git commit -m 'Add: MinhaFeature'`)
-7. Push para a branch (`git push origin feature/MinhaFeature`)
-8. Abra um Pull Request
+#### Preparação
 
-### Padrões de Código
+1. **Fork o repositório**
+   ```bash
+   # Clique em "Fork" no GitHub
+   git clone https://github.com/seu-usuario/dje-analise-v2.git
+   cd dje-analise-v2
+   ```
 
-- Siga PEP 8
-- Use Black para formatação
-- Máximo 127 caracteres por linha
-- Use type hints
-- Docstrings em português para funções públicas
-- Nomes de variáveis e funções em inglês
+2. **Configure o upstream**
+   ```bash
+   git remote add upstream https://github.com/brenobbbenicio-blip/dje-analise-v2.git
+   ```
 
-### Padrões de Commit
+3. **Crie uma branch para sua feature**
+   ```bash
+   git checkout -b feature/nome-da-feature
+   # ou
+   git checkout -b fix/nome-do-bug
+   ```
 
-Use mensagens de commit claras:
+#### Desenvolvimento
 
+1. **Faça suas alterações**
+   - Siga o estilo de código do projeto
+   - Adicione testes se aplicável
+   - Atualize a documentação se necessário
+
+2. **Teste suas alterações**
+   ```bash
+   # Execute os testes
+   pytest tests/
+
+   # Verifique o linting
+   black src/
+   flake8 src/
+   ```
+
+3. **Commit suas mudanças**
+   ```bash
+   git add .
+   git commit -m "feat: adiciona nova funcionalidade X"
+   ```
+
+   **Convenção de commits:**
+   - `feat:` nova funcionalidade
+   - `fix:` correção de bug
+   - `docs:` alteração em documentação
+   - `refactor:` refatoração de código
+   - `test:` adição/alteração de testes
+   - `chore:` tarefas de manutenção
+
+#### Submissão
+
+1. **Push para seu fork**
+   ```bash
+   git push origin feature/nome-da-feature
+   ```
+
+2. **Abra um Pull Request**
+   - Acesse seu fork no GitHub
+   - Clique em "New Pull Request"
+   - Preencha o template com:
+     - Descrição das mudanças
+     - Issue relacionada (se houver)
+     - Screenshots (se aplicável)
+     - Checklist de verificação
+
+3. **Aguarde review**
+   - Mantenha o PR atualizado com a branch main
+   - Responda aos comentários dos revisores
+   - Faça ajustes se solicitado
+
+## 🎨 Padrões de Código
+
+### Python
+
+- Siga [PEP 8](https://pep8.org/)
+- Use [Black](https://black.readthedocs.io/) para formatação
+- Máximo de 88 caracteres por linha
+- Use type hints quando possível
+- Docstrings no formato Google
+
+**Exemplo:**
+```python
+def process_document(text: str, max_length: int = 1000) -> Dict[str, Any]:
+    """
+    Processa um documento de jurisprudência.
+
+    Args:
+        text: Texto do documento
+        max_length: Comprimento máximo do chunk
+
+    Returns:
+        Dicionário com documento processado
+
+    Raises:
+        ValueError: Se o texto estiver vazio
+    """
+    pass
 ```
-Add: Nova funcionalidade
-Fix: Correção de bug
-Update: Atualização de código existente
-Refactor: Refatoração
-Docs: Documentação
-Test: Testes
-```
+
+### Estrutura de Arquivos
+
+- Módulos em `src/`
+- Testes em `tests/`
+- Documentação em `docs/`
+- Exemplos em `examples/`
 
 ### Testes
 
-- Adicione testes para novas funcionalidades
-- Mantenha cobertura de testes > 80%
-- Execute `pytest` antes de fazer commit
-- Use fixtures para dados de teste
+- Use pytest
+- Cobertura mínima de 80%
+- Testes unitários para funções críticas
+- Testes de integração para fluxos completos
 
-### Documentação
+## 📝 Documentação
 
-- Atualize o README.md se necessário
-- Adicione docstrings em funções novas
-- Comente código complexo
-- Atualize exemplos se a API mudar
+- Atualize o README.md se adicionar funcionalidades
+- Documente funções complexas
+- Adicione exemplos de uso
+- Mantenha comentários claros e concisos
 
-## Configuração do Ambiente de Desenvolvimento
+## 🔍 Checklist do Pull Request
 
-```bash
-# Clone o repositório
-git clone https://github.com/brenobbbenicio-blip/dje-analise-v2.git
-cd dje-analise-v2
+Antes de submeter, verifique:
 
-# Crie ambiente virtual
-python -m venv venv
-source venv/bin/activate
+- [ ] Código segue os padrões do projeto
+- [ ] Testes foram adicionados/atualizados
+- [ ] Todos os testes passam
+- [ ] Documentação foi atualizada
+- [ ] Commit messages são descritivas
+- [ ] Não há conflitos com a branch main
+- [ ] Código não adiciona novas dependências sem justificativa
 
-# Instale dependências
-pip install -r requirements.txt
+## 🚫 O Que Evitar
 
-# Configure variáveis de ambiente
-cp .env.example .env
-# Edite .env com suas configurações
+- Commits diretamente na branch main
+- Pull Requests muito grandes (divida em partes menores)
+- Mudanças não relacionadas no mesmo PR
+- Código sem testes
+- Breaking changes sem discussão prévia
+- Adicionar dependências desnecessárias
 
-# Execute testes
-pytest
+## 💡 Ideias de Contribuição
 
-# Execute linting
-black src/
-flake8 src/
-```
+Procurando por onde começar? Aqui estão algumas ideias:
 
-## Código de Conduta
+### Para Iniciantes
+- Melhorar documentação
+- Adicionar exemplos de uso
+- Corrigir typos
+- Traduzir documentação
 
-- Seja respeitoso e inclusivo
-- Aceite críticas construtivas
-- Foque no que é melhor para a comunidade
-- Mostre empatia com outros membros
+### Intermediário
+- Adicionar testes
+- Melhorar tratamento de erros
+- Otimizar performance
+- Implementar logging
 
-## Dúvidas?
+### Avançado
+- Implementar scraper real do TSE
+- Adicionar suporte a outros embeddings
+- Criar interface web
+- Adicionar cache de consultas
+- Implementar análise de sentimento
+- Adicionar exportação de relatórios
 
-Se tiver dúvidas, abra uma issue com o prefixo `[QUESTION]`.
+## 📞 Dúvidas?
 
-## Licença
+Se você tiver dúvidas sobre como contribuir:
 
-Ao contribuir, você concorda que suas contribuições serão licenciadas sob a licença MIT.
+- Abra uma issue com a tag `question`
+- Entre em contato através das issues do GitHub
+- Consulte a documentação do projeto
+
+## 🎉 Reconhecimento
+
+Todos os contribuidores serão reconhecidos no README.md e no histórico de commits do projeto.
+
+Agradecemos sua contribuição! 🙏

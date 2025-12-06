@@ -1,330 +1,224 @@
-# DJE Análise v2
+# 🏛️ DJE Análise v2
 
-[![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-green.svg)](https://fastapi.tiangolo.com/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+> Sistema avançado de análise de jurisprudência eleitoral brasileira utilizando RAG (Retrieval-Augmented Generation)
 
-Sistema avançado de análise de jurisprudência eleitoral com RAG (Retrieval-Augmented Generation). Este sistema permite coletar, processar e realizar buscas semânticas em decisões judiciais eleitorais, utilizando técnicas de processamento de linguagem natural e inteligência artificial.
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-## 🚀 Funcionalidades
+## 📋 Sobre o Projeto
 
-- **Coleta Automatizada**: Scraping de decisões do Diário da Justiça Eletrônica (DJE)
-- **Processamento Inteligente**: Análise e fragmentação de textos jurídicos
-- **Embeddings Vetoriais**: Geração de embeddings usando OpenAI
-- **Busca Semântica**: Busca avançada usando ChromaDB
-- **RAG**: Geração de respostas contextualizadas com GPT-4
-- **API REST**: Interface completa com FastAPI
-- **Docker**: Containerização completa da aplicação
+O **DJE Análise v2** é um sistema inteligente que utiliza técnicas de Inteligência Artificial para análise e consulta de jurisprudência eleitoral brasileira. Através da tecnologia RAG (Retrieval-Augmented Generation), o sistema é capaz de:
 
-## 📋 Pré-requisitos
+- 🔍 Buscar e indexar decisões eleitorais
+- 💡 Responder perguntas sobre jurisprudência de forma inteligente
+- 📊 Contextualizar respostas com base em documentos reais
+- 🎯 Fornecer citações precisas das fontes consultadas
 
-- Python 3.11+
-- OpenAI API Key
-- Docker e Docker Compose (opcional)
+### 🌟 Características
 
-## 🔧 Instalação
+- **RAG Avançado**: Utiliza embeddings e busca vetorial para recuperação de informações relevantes
+- **Múltiplos Tribunais**: Suporte a TSE, TRE-MG, TRE-RJ, TRE-PR e TRE-SC
+- **Interface CLI**: Interface de linha de comando intuitiva e interativa
+- **Processamento Inteligente**: Divisão automática de documentos em chunks otimizados
+- **Filtros por Tribunal**: Consulte jurisprudência de tribunais específicos
+- **Fonte Citada**: Todas as respostas incluem referências às decisões consultadas
+- **Extensível**: Arquitetura modular que permite fácil expansão
 
-### Instalação Local
+### 🏛️ Tribunais Suportados
 
-1. Clone o repositório:
+| Tribunal | Sigla | Estado | Status |
+|----------|-------|--------|--------|
+| Tribunal Superior Eleitoral | TSE | Nacional | ✅ Disponível |
+| TRE Minas Gerais | TRE-MG | MG | ✅ Disponível |
+| TRE Rio de Janeiro | TRE-RJ | RJ | ✅ Disponível |
+| TRE Paraná | TRE-PR | PR | ✅ Disponível |
+| TRE Santa Catarina | TRE-SC | SC | ✅ Disponível |
+
+## 🚀 Instalação
+
+### Pré-requisitos
+
+- Python 3.8 ou superior
+- pip (gerenciador de pacotes Python)
+- Conta na OpenAI com API key
+
+### Passo a Passo
+
+1. **Clone o repositório**
 ```bash
 git clone https://github.com/brenobbbenicio-blip/dje-analise-v2.git
 cd dje-analise-v2
 ```
 
-2. Crie e ative um ambiente virtual:
+2. **Crie um ambiente virtual (recomendado)**
 ```bash
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# ou
-venv\Scripts\activate  # Windows
+
+# No Linux/Mac:
+source venv/bin/activate
+
+# No Windows:
+venv\Scripts\activate
 ```
 
-3. Instale as dependências:
+3. **Instale as dependências**
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Configure as variáveis de ambiente:
+4. **Configure as variáveis de ambiente**
 ```bash
+# Copie o arquivo de exemplo
 cp .env.example .env
-# Edite o arquivo .env e adicione sua OPENAI_API_KEY
+
+# Edite o arquivo .env e adicione sua API key da OpenAI
+# OPENAI_API_KEY=sua_chave_api_aqui
 ```
 
-### Instalação com Docker
-
-1. Clone o repositório e configure o .env:
+5. **Configure a base de dados inicial**
 ```bash
-git clone https://github.com/brenobbbenicio-blip/dje-analise-v2.git
-cd dje-analise-v2
-cp .env.example .env
-# Edite o .env com sua OPENAI_API_KEY
+# Coletar de todos os tribunais (TSE + TREs)
+python main.py --setup
+
+# Ou apenas de tribunais específicos
+python main.py --setup --tribunals TSE,TRE-MG
 ```
 
-2. Inicie os containers:
-```bash
-docker-compose up -d
-```
+## 💻 Como Usar
 
-## 🎯 Uso
+### Modo Interativo (Recomendado)
 
-### 1. Coletar Dados do DJE
+Execute o sistema em modo interativo para fazer múltiplas consultas:
 
 ```bash
-python scripts/collect_data.py
+python main.py --interactive
 ```
 
-Este script irá coletar decisões do DJE e salvá-las em `data/raw/`.
-
-### 2. Processar e Indexar Dados
-
-```bash
-python scripts/index_data.py
+Exemplo de sessão:
 ```
+📝 Digite sua pergunta sobre jurisprudência eleitoral:
+> Quais são os requisitos para registro de candidatura?
 
-Este script processa os dados coletados e indexa no sistema RAG.
-
-### 3. Iniciar a API
-
-```bash
-# Modo desenvolvimento
-python -m uvicorn src.api.main:app --reload
-
-# Ou usando o script
-./scripts/start_api.sh
-
-# Com Docker
-docker-compose up
-```
-
-A API estará disponível em `http://localhost:8000`
-
-### 4. Acessar a Documentação
-
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-
-## 📡 Endpoints da API
-
-### Health Check
-```bash
-GET /health
-```
-
-### Busca Semântica
-```bash
-POST /search
-Content-Type: application/json
-
-{
-  "query": "prestação de contas eleitorais",
-  "n_results": 5,
-  "filters": {}
-}
-```
-
-### Consulta com RAG
-```bash
-POST /query
-Content-Type: application/json
-
-{
-  "query": "Como funciona a prestação de contas de campanha?",
-  "n_results": 5,
-  "temperature": 0.7
-}
-```
-
-### Estatísticas do Sistema
-```bash
-GET /stats
-```
+🔍 Processando consulta...
 
 ## 📁 Estrutura do Projeto
 
 ```
 dje-analise-v2/
 ├── src/
-│   ├── api/                 # API REST
-│   │   ├── main.py          # Aplicação FastAPI
-│   │   └── models.py        # Modelos Pydantic
-│   ├── collectors/          # Coletores de dados
-│   │   └── dje_collector.py # Coletor do DJE
-│   ├── processors/          # Processadores de texto
-│   │   └── text_processor.py
-│   ├── rag/                 # Sistema RAG
-│   │   ├── embeddings.py    # Gerador de embeddings
-│   │   ├── vector_store.py  # ChromaDB
-│   │   └── rag_system.py    # Sistema completo
-│   ├── utils/               # Utilitários
-│   │   └── logger.py        # Sistema de logging
-│   └── config.py            # Configurações
-├── tests/                   # Testes
-│   ├── test_api.py
-│   └── test_processors.py
-├── scripts/                 # Scripts utilitários
-│   ├── collect_data.py
-│   ├── index_data.py
-│   └── start_api.sh
-├── data/                    # Dados
-│   ├── raw/                 # Dados brutos
-│   ├── processed/           # Dados processados
-│   └── embeddings/          # Embeddings e ChromaDB
-├── docs/                    # Documentação
-├── Dockerfile               # Dockerfile
-├── docker-compose.yml       # Docker Compose
-├── requirements.txt         # Dependências
-├── .env.example             # Exemplo de variáveis de ambiente
-└── README.md                # Este arquivo
+│   ├── models/           # Modelos e lógica RAG
+│   │   └── rag_system.py
+│   ├── scraper/          # Coleta de jurisprudência
+│   │   └── dje_scraper.py
+│   ├── embeddings/       # Processamento de documentos
+│   │   └── document_processor.py
+│   ├── utils/            # Funções auxiliares
+│   │   └── helpers.py
+│   └── config.py         # Configurações do sistema
+├── data/
+│   ├── raw/              # Documentos brutos coletados
+│   ├── processed/        # Documentos processados
+│   └── vectorstore/      # Base vetorial ChromaDB
+├── docs/                 # Documentação adicional
+├── examples/             # Exemplos de uso
+├── tests/                # Testes automatizados
+├── main.py               # Interface principal
+├── requirements.txt      # Dependências Python
+├── .env.example          # Exemplo de variáveis de ambiente
+└── README.md             # Este arquivo
 ```
 
-## 🧪 Testes
-
-Execute os testes:
-
-```bash
-# Todos os testes
-pytest
-
-# Com cobertura
-pytest --cov=src --cov-report=html
-
-# Testes específicos
-pytest tests/test_api.py -v
-```
-
-## 🔐 Configuração
+## 🔧 Configuração Avançada
 
 ### Variáveis de Ambiente
 
-Principais variáveis no arquivo `.env`:
+Você pode personalizar diversos aspectos do sistema através do arquivo `.env`:
 
 ```bash
-# OpenAI
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4-turbo-preview
+# Modelo de embeddings (OpenAI)
 EMBEDDING_MODEL=text-embedding-3-small
 
-# API
-API_HOST=0.0.0.0
-API_PORT=8000
+# Modelo de chat (OpenAI)
+CHAT_MODEL=gpt-3.5-turbo
 
-# RAG
+# Temperatura do modelo (0.0 a 1.0)
+TEMPERATURE=0.3
+
+# Máximo de tokens na resposta
+MAX_TOKENS=2000
+
+# Tamanho dos chunks de texto
 CHUNK_SIZE=1000
+
+# Sobreposição entre chunks
 CHUNK_OVERLAP=200
-TOP_K_RESULTS=5
-
-# ChromaDB
-COLLECTION_NAME=dje_jurisprudencia
 ```
 
-## 🏗️ Arquitetura
+### Personalização do Scraper
 
-```
-┌─────────────┐
-│   Cliente   │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────────┐
-│   API FastAPI   │
-└────────┬────────┘
-         │
-    ┌────┴────┐
-    │         │
-    ▼         ▼
-┌─────┐   ┌──────────┐
-│ RAG │───│ ChromaDB │
-└──┬──┘   └──────────┘
-   │
-   ▼
-┌──────────┐
-│  OpenAI  │
-└──────────┘
-```
-
-## 🛠️ Tecnologias
-
-- **FastAPI**: Framework web moderno e de alta performance
-- **OpenAI**: GPT-4 para geração de respostas e embeddings
-- **ChromaDB**: Banco de dados vetorial para busca semântica
-- **LangChain**: Framework para aplicações LLM
-- **BeautifulSoup**: Web scraping
-- **Pydantic**: Validação de dados
-- **Pytest**: Framework de testes
-
-## 📝 Exemplos de Uso
-
-### Python
-
-```python
-from src.rag.rag_system import RAGSystem
-
-# Inicializar sistema
-rag = RAGSystem()
-
-# Fazer uma consulta
-response = rag.generate_response(
-    query="Quais são os prazos para prestação de contas?",
-    n_results=5
-)
-
-print(response['answer'])
-print(f"Fontes: {len(response['sources'])}")
-```
-
-### cURL
-
-```bash
-# Busca
-curl -X POST "http://localhost:8000/search" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "eleições municipais", "n_results": 5}'
-
-# Consulta RAG
-curl -X POST "http://localhost:8000/query" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Como funciona a prestação de contas?", "n_results": 5}'
-```
+Edite `src/config.py` para ajustar:
+- URL base do TSE
+- Delay entre requisições
+- Número máximo de documentos por busca
 
 ## 🤝 Contribuindo
 
-Contribuições são bem-vindas! Por favor:
+Contribuições são bem-vindas! Para contribuir:
 
-1. Faça um Fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona MinhaFeature'`)
+4. Push para a branch (`git push origin feature/MinhaFeature`)
 5. Abra um Pull Request
+
+Veja [CONTRIBUTING.md](CONTRIBUTING.md) para mais detalhes.
+
+## 📝 Exemplos de Perguntas
+
+O sistema pode responder diversos tipos de perguntas sobre jurisprudência eleitoral:
+
+- "Quais são os requisitos para registro de candidatura?"
+- "O que configura abuso de poder econômico?"
+- "Qual o prazo para prestação de contas de campanha?"
+- "Quais são as causas de inelegibilidade?"
+- "Como funciona a propaganda eleitoral na internet?"
+
+## 🔒 Segurança
+
+- Nunca compartilhe sua API key da OpenAI publicamente
+- O arquivo `.env` está no `.gitignore` para evitar commits acidentais
+- Revise sempre os documentos antes de adicioná-los à base
+
+## 🐛 Problemas Conhecidos
+
+- O scraper atual usa documentos de exemplo (implementação completa depende da estrutura do site do TSE)
+- Requisitos de API key da OpenAI (custo por uso)
+
+## 📚 Documentação Adicional
+
+- [OpenAI API Documentation](https://platform.openai.com/docs)
+- [ChromaDB Documentation](https://docs.trychroma.com/)
+- [LangChain Documentation](https://python.langchain.com/)
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
 ## 👥 Autores
 
-- **DJE Análise Team** - *Trabalho inicial*
-
-## 📞 Suporte
-
-Para suporte, abra uma issue no GitHub ou entre em contato através de [seu-email@example.com](mailto:seu-email@example.com).
-
-## 🗺️ Roadmap
-
-- [ ] Interface web com Streamlit
-- [ ] Suporte a mais tribunais
-- [ ] Análise de tendências jurisprudenciais
-- [ ] Sistema de alertas automáticos
-- [ ] Exportação de relatórios
-- [ ] Integração com sistemas jurídicos
+- **Breno Benicio** - *Desenvolvimento inicial* - [@brenobbbenicio-blip](https://github.com/brenobbbenicio-blip)
 
 ## 🙏 Agradecimentos
 
-- Tribunal Superior Eleitoral (TSE)
-- OpenAI pela API
-- Comunidade FastAPI
-- Todos os contribuidores
+- TSE (Tribunal Superior Eleitoral) pela disponibilização da jurisprudência
+- Comunidade OpenAI
+- Contribuidores do projeto
+
+## 📞 Contato
+
+Para dúvidas, sugestões ou problemas, abra uma [issue](https://github.com/brenobbbenicio-blip/dje-analise-v2/issues) no GitHub.
 
 ---
 
-**Desenvolvido com ❤️ para o Direito Eleitoral Brasileiro**
+⭐ Se este projeto foi útil para você, considere dar uma estrela no GitHub!

@@ -16,8 +16,6 @@ parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -27,8 +25,7 @@ MANIFEST
 venv/
 env/
 ENV/
-env.bak/
-venv.bak/
+.venv
 
 # IDEs
 .vscode/
@@ -42,17 +39,21 @@ venv.bak/
 .env
 .env.local
 
-# Data
+# Data files
 data/raw/*
 data/processed/*
-data/embeddings/*
+data/vectorstore/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
-!data/embeddings/.gitkeep
+!data/vectorstore/.gitkeep
 
 # Logs
-logs/
 *.log
+logs/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
 
 # Testing
 .pytest_cache/
@@ -60,14 +61,13 @@ logs/
 htmlcov/
 .tox/
 
-# MyPy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+# Benchmark results
+benchmarks/*.json
+benchmarks/__pycache__/
 
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb
+# Documentation
+docs/_build/
+site/
 
-# Docker
-*.env.docker
+# OS
+Thumbs.db
