@@ -22,15 +22,21 @@ from src.config import (
 )
 
 
-def setup_database(max_docs: int = 2, tribunals: list = None):
+def setup_database(max_docs: int = 2, tribunals: list = None, use_scraping: bool = False):
     """
-    Configura a base de dados com documentos de exemplo
+    Configura a base de dados com documentos de exemplo ou raspagem real
 
     Args:
         max_docs: Número máximo de documentos por tribunal
         tribunals: Lista de tribunais a coletar (None = todos)
+        use_scraping: Se True, tenta fazer raspagem real dos sites
     """
     print("\n🔧 Configurando base de dados...")
+
+    if use_scraping:
+        print("🌐 Modo: RASPAGEM REAL (com fallback para exemplos)")
+    else:
+        print("📄 Modo: DOCUMENTOS DE EXEMPLO")
 
     if tribunals is None:
         tribunals = AVAILABLE_TRIBUNALS
@@ -49,7 +55,7 @@ def setup_database(max_docs: int = 2, tribunals: list = None):
     print("=" * 80)
 
     for tribunal in tribunals:
-        scraper = DJEScraper(tribunal=tribunal)
+        scraper = DJEScraper(tribunal=tribunal, use_real_scraping=use_scraping)
 
         docs = scraper.scrape_search_results(
             search_term="eleições",
@@ -231,6 +237,12 @@ def main():
         help='Lista de tribunais para setup, separados por vírgula (ex: TSE,TRE-MG)'
     )
 
+    parser.add_argument(
+        '--scrape',
+        action='store_true',
+        help='Usar raspagem real dos sites (experimental, com fallback para exemplos)'
+    )
+
     args = parser.parse_args()
 
     # Validar API key
@@ -254,7 +266,7 @@ def main():
                 print(f"Tribunais disponíveis: {', '.join(AVAILABLE_TRIBUNALS)}")
                 return 1
 
-        setup_database(max_docs=args.max_docs, tribunals=tribunals)
+        setup_database(max_docs=args.max_docs, tribunals=tribunals, use_scraping=args.scrape)
     elif args.query:
         tribunal_filter = None
         if args.tribunal:

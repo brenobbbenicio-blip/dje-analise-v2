@@ -17,17 +17,20 @@ from src.config import (
     TRE_CONFIGS,
     AVAILABLE_TRIBUNALS
 )
+from src.scraper.html_parser import TSEParser, TREParser
+from src.scraper.example_documents import TRE_EXAMPLE_DOCUMENTS
 
 
 class DJEScraper:
     """Scraper para coleta de jurisprudência eleitoral"""
 
-    def __init__(self, tribunal: str = "TSE"):
+    def __init__(self, tribunal: str = "TSE", use_real_scraping: bool = False):
         """
         Inicializa o scraper
 
         Args:
-            tribunal: Código do tribunal (TSE, TRE-MG, TRE-RJ, TRE-PR, TRE-SC)
+            tribunal: Código do tribunal (TSE, TRE-MG, TRE-RJ, TRE-PR, TRE-SC, etc)
+            use_real_scraping: Se True, tenta fazer raspagem real do site
         """
         if tribunal not in AVAILABLE_TRIBUNALS:
             raise ValueError(
@@ -38,10 +41,15 @@ class DJEScraper:
         self.tribunal = tribunal
         self.tribunal_config = TRE_CONFIGS[tribunal]
         self.base_url = self.tribunal_config['url']
+        self.use_real_scraping = use_real_scraping
 
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Accept-Encoding': 'gzip, deflate',
+            'Connection': 'keep-alive',
         })
 
     def scrape_search_results(
@@ -65,24 +73,93 @@ class DJEScraper:
 
         documents = []
 
-        # Nota: Este é um exemplo simplificado
-        # A implementação real dependeria da estrutura específica do site de cada tribunal
-        # Por ora, criamos documentos de exemplo
+        # Tentar raspagem real se habilitado
+        if self.use_real_scraping:
+            try:
+                print(f"🌐 Tentando raspagem real do site...")
+                real_docs = self._scrape_real_website(search_term, max_results)
+                if real_docs and len(real_docs) > 0:
+                    documents = real_docs
+                    print(f"✅ Raspagem real bem-sucedida!")
+                else:
+                    print(f"⚠️  Raspagem real não retornou resultados, usando exemplos...")
+                    documents = self._generate_example_documents(search_term, max_results)
+            except Exception as e:
+                print(f"⚠️  Erro na raspagem real: {e}")
+                print(f"📄 Usando documentos de exemplo como fallback...")
+                documents = self._generate_example_documents(search_term, max_results)
+        else:
+            # Usar documentos de exemplo
+            documents = self._generate_example_documents(search_term, max_results)
 
-        # Simulação de documentos (em produção, faria scraping real)
-        example_docs = self._generate_example_documents(search_term, max_results)
-
-        for doc in example_docs:
-            # Adicionar informação do tribunal aos metadados
+        # Adicionar informação do tribunal aos metadados
+        for doc in documents:
             doc['metadata']['tribunal'] = self.tribunal
             doc['metadata']['tribunal_name'] = tribunal_name
             doc['metadata']['state'] = self.tribunal_config['state']
-
-            documents.append(doc)
             time.sleep(REQUEST_DELAY / 10)  # Delay menor para exemplos
 
         print(f"✅ Coletados {len(documents)} documentos de {self.tribunal}")
         return documents
+
+    def _scrape_real_website(
+        self,
+        search_term: str,
+        max_results: int
+    ) -> List[Dict]:
+        """
+        Faz raspagem real do site do tribunal
+
+        Args:
+            search_term: Termo de busca
+            max_results: Máximo de resultados
+
+        Returns:
+            Lista de documentos raspados
+
+        Raises:
+            Exception: Em caso de erro na raspagem
+        """
+        documents = []
+
+        # Construir URL de busca (adaptável para diferentes tribunais)
+        # Padrões comuns de URL de busca em sites de tribunais
+        search_urls = [
+            f"{self.base_url}/busca?q={search_term}",
+            f"{self.base_url}/jurisprudencia/busca?termo={search_term}",
+            f"{self.base_url}/pesquisa?texto={search_term}",
+            f"{self.base_url}?s={search_term}",
+        ]
+
+        # Tentar cada padrão de URL
+        for search_url in search_urls:
+            try:
+                print(f"   Tentando URL: {search_url[:50]}...")
+                response = self.session.get(
+                    search_url,
+                    timeout=30,
+                    allow_redirects=True
+                )
+
+                if response.status_code == 200:
+                    # Usar parser apropriado
+                    if self.tribunal == "TSE":
+                        parsed_docs = TSEParser.parse_search_results(response.text)
+                    else:
+                        parsed_docs = TREParser.parse_search_results(response.text, self.tribunal)
+
+                    if parsed_docs and len(parsed_docs) > 0:
+                        documents.extend(parsed_docs[:max_results])
+                        print(f"   ✓ Encontrados {len(parsed_docs)} resultados")
+                        break  # URL funcionou, não precisa tentar outras
+
+                time.sleep(REQUEST_DELAY)
+
+            except requests.RequestException as e:
+                # Continuar tentando outras URLs
+                continue
+
+        return documents[:max_results]
 
     def _generate_example_documents(
         self,
