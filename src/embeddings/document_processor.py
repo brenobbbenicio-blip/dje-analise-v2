@@ -2,7 +2,7 @@
 Processador de documentos para criar embeddings e chunks
 """
 from typing import List, Dict
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from src.config import CHUNK_SIZE, CHUNK_OVERLAP
 
