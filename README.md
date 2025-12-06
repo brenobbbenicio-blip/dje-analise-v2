@@ -201,6 +201,30 @@ python main.py --detect-contradictions "inelegibilidade" \
 Para documentação completa:
 [📚 Guia do Detector de Contradições](docs/DETECTOR_CONTRADICOES.md)
 
+### 🤖 Gerador Automático de Peças Processuais (NOVO!)
+
+Gera petições, recursos e pareceres automaticamente fundamentados em jurisprudência:
+
+```bash
+# Gerar recurso eleitoral
+python main.py --generate-document recurso \
+    --case-description "Candidato teve registro indeferido" \
+    --objective "Reformar decisão e deferir registro" \
+    --arguments "ausência de inelegibilidade;requisitos cumpridos"
+
+# Gerar petição inicial
+python main.py --generate-document petição_inicial \
+    --case-description "Propaganda irregular em outdoor" \
+    --objective "Aplicação de multa e remoção" \
+    --output minha_peticao.txt
+```
+
+**Tipos disponíveis:** Petição Inicial, Recurso, Parecer, Impugnação, Contestação
+
+**O que faz:** Redação com IA + Fundamentação em jurisprudência + Estrutura completa + Citações formatadas
+
+**Por que é genial:** ⏱️ Dias → Minutos | 🎯 Sempre fundamentado | 📊 Qualidade profissional
+
 ## 🎓 Guia de Tribunais
 
 Para um guia completo sobre como usar os múltiplos tribunais, consulte:

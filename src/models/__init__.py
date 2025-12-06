@@ -10,6 +10,16 @@ from .contradiction_models import (
     ContradictionReport,
     ContradictionAlert
 )
+from .document_models import (
+    Party,
+    LegalArgument,
+    Citation,
+    DocumentSection,
+    LegalDocument,
+    DocumentTemplate,
+    GenerationRequest,
+    GenerationResult
+)
 
 __all__ = [
     'RAGSystem',
@@ -18,5 +28,13 @@ __all__ = [
     'Contradiction',
     'ContradictionCluster',
     'ContradictionReport',
-    'ContradictionAlert'
+    'ContradictionAlert',
+    'Party',
+    'LegalArgument',
+    'Citation',
+    'DocumentSection',
+    'LegalDocument',
+    'DocumentTemplate',
+    'GenerationRequest',
+    'GenerationResult'
 ]

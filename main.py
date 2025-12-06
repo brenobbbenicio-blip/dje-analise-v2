@@ -9,6 +9,8 @@ from src.models import RAGSystem
 from src.scraper import DJEScraper
 from src.embeddings import DocumentProcessor
 from src.analyzers import ContradictionDetector, ReportGenerator
+from src.generators import DocumentGenerator, DocumentTemplates
+from src.models.document_models import GenerationRequest, Party
 from src.utils import (
     format_result,
     save_result,
@@ -198,6 +200,108 @@ def detect_contradictions_cmd(
             print(ReportGenerator.format_alert(alert))
 
 
+def generate_document_cmd(
+    document_type: str,
+    case_description: str,
+    objective: str,
+    tribunal: str = "TSE",
+    arguments: list = None,
+    export_path: str = None
+):
+    """
+    Gera documento processual automaticamente
+
+    Args:
+        document_type: Tipo de documento (petição_inicial, recurso, parecer, etc)
+        case_description: Descrição do caso
+        objective: Objetivo da peça
+        tribunal: Tribunal destinatário
+        arguments: Lista de argumentos principais
+        export_path: Caminho para exportar (opcional)
+    """
+    print_banner()
+    print("\n🤖 GERADOR AUTOMÁTICO DE PEÇAS PROCESSUAIS")
+    print("=" * 100)
+
+    # Verificar base de dados
+    rag = RAGSystem()
+    stats = rag.get_stats()
+    if stats['total_documents'] == 0:
+        print("\n⚠️  Base de dados vazia! A peça será gerada com jurisprudência limitada.")
+        print("Para melhor qualidade, execute: python main.py --setup")
+        print()
+
+    # Listar templates disponíveis
+    templates = DocumentTemplates.get_all_templates()
+    if document_type not in templates:
+        print(f"\n❌ Tipo de documento '{document_type}' não disponível.")
+        print(f"\nDisponíveis: {', '.join(templates.keys())}")
+        return
+
+    template = templates[document_type]
+    print(f"\n📋 Tipo: {template.name}")
+    print(f"📄 Descrição: {template.description}")
+    print(f"⚖️  Tribunal: {tribunal}")
+
+    # Criar requisição
+    request = GenerationRequest(
+        document_type=document_type,
+        tribunal=tribunal,
+        case_description=case_description,
+        objective=objective,
+        main_arguments=arguments or [],
+        max_jurisprudence=5
+    )
+
+    # Gerar documento
+    generator = DocumentGenerator(rag)
+    result = generator.generate_document(request)
+
+    # Exibir resultado
+    print("\n" + "=" * 100)
+    print("📄 DOCUMENTO GERADO")
+    print("=" * 100)
+    print()
+    print(result.formatted_text)
+    print()
+    print("=" * 100)
+
+    # Estatísticas
+    print(f"\n📊 Estatísticas:")
+    print(f"   Palavras: {result.word_count}")
+    print(f"   Jurisprudências citadas: {result.jurisprudence_count}")
+    print(f"   Argumentos desenvolvidos: {result.argument_count}")
+    print(f"   Qualidade estimada: {result.quality_score:.1%}")
+
+    # Sugestões
+    if result.suggestions:
+        print(f"\n💡 Sugestões de melhoria:")
+        for sug in result.suggestions:
+            print(f"   • {sug}")
+
+    # Exportar se solicitado
+    if export_path:
+        from pathlib import Path
+        export_file = Path(export_path)
+        export_file.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(export_file, 'w', encoding='utf-8') as f:
+            f.write(result.formatted_text)
+
+        print(f"\n✅ Documento exportado para: {export_path}")
+    else:
+        # Salvar em processed
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{document_type}_{timestamp}.txt"
+        filepath = PROCESSED_DATA_DIR / filename
+
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(result.formatted_text)
+
+        print(f"\n💾 Documento salvo em: {filepath}")
+
+
 def interactive_mode():
     """Modo interativo de consulta"""
     print_banner()
@@ -345,6 +449,45 @@ def main():
         help='Exportar relatório de contradições (md=Markdown, json=JSON)'
     )
 
+    parser.add_argument(
+        '--generate-document',
+        type=str,
+        metavar='TIPO',
+        choices=['petição_inicial', 'recurso', 'parecer', 'impugnação', 'contestação'],
+        help='Gera documento processual automaticamente (petição_inicial, recurso, parecer, impugnação, contestação)'
+    )
+
+    parser.add_argument(
+        '--case-description',
+        type=str,
+        help='Descrição do caso para geração de documento'
+    )
+
+    parser.add_argument(
+        '--objective',
+        type=str,
+        help='Objetivo da peça processual'
+    )
+
+    parser.add_argument(
+        '--doc-tribunal',
+        type=str,
+        default='TSE',
+        help='Tribunal destinatário do documento (padrão: TSE)'
+    )
+
+    parser.add_argument(
+        '--arguments',
+        type=str,
+        help='Argumentos principais separados por ponto-e-vírgula (ex: "inelegibilidade;condições de elegibilidade")'
+    )
+
+    parser.add_argument(
+        '--output',
+        type=str,
+        help='Caminho para salvar documento gerado'
+    )
+
     args = parser.parse_args()
 
     # Validar API key
@@ -386,6 +529,29 @@ def main():
             max_cases=args.max_cases,
             tribunals=tribunals,
             export_format=args.export
+        )
+    elif args.generate_document:
+        # Validar parâmetros obrigatórios
+        if not args.case_description or not args.objective:
+            print("\n❌ ERRO: --case-description e --objective são obrigatórios para geração de documentos!")
+            print("\nExemplo:")
+            print('python main.py --generate-document recurso \\')
+            print('  --case-description "Candidato teve registro indeferido por suposta inelegibilidade" \\')
+            print('  --objective "Reformar decisão e deferir registro de candidatura"')
+            return 1
+
+        # Processar argumentos
+        arguments_list = []
+        if args.arguments:
+            arguments_list = [arg.strip() for arg in args.arguments.split(';')]
+
+        generate_document_cmd(
+            document_type=args.generate_document,
+            case_description=args.case_description,
+            objective=args.objective,
+            tribunal=args.doc_tribunal,
+            arguments=arguments_list,
+            export_path=args.output
         )
     elif args.query:
         tribunal_filter = None
