@@ -8,7 +8,7 @@ from pathlib import Path
 from src.models import RAGSystem
 from src.scraper import DJEScraper
 from src.embeddings import DocumentProcessor
-from src.analyzers import ContradictionDetector, ReportGenerator
+from src.analyzers import ContradictionDetector, ReportGenerator, ChangeMonitor
 from src.generators import DocumentGenerator, DocumentTemplates
 from src.models.document_models import GenerationRequest, Party
 from src.utils import (
@@ -302,6 +302,79 @@ def generate_document_cmd(
         print(f"\n💾 Documento salvo em: {filepath}")
 
 
+def monitor_changes_cmd(
+    theme: str,
+    tribunals: list = None,
+    days_back: int = 730
+):
+    """
+    Monitora mudanças de entendimento jurisprudencial
+
+    Args:
+        theme: Tema a monitorar
+        tribunals: Lista de tribunais
+        days_back: Dias para análise histórica
+    """
+    print_banner()
+    print("\n🔔 MONITOR DE MUDANÇAS DE ENTENDIMENTO")
+    print("=" * 100)
+
+    # Verificar base
+    rag = RAGSystem()
+    stats = rag.get_stats()
+    if stats['total_documents'] == 0:
+        print("\n⚠️  Base de dados vazia!")
+        print("Execute: python main.py --setup")
+        return
+
+    # Monitorar
+    monitor = ChangeMonitor(rag.collection)
+    report = monitor.monitor_theme(theme, tribunals, days_back)
+
+    # Exibir relatório
+    print("\n" + "=" * 100)
+    print("📊 RELATÓRIO DE MONITORAMENTO")
+    print("=" * 100)
+    print(f"\nTema: {report.theme}")
+    print(f"Período: {report.total_days} dias")
+    print(f"Casos analisados: {report.total_cases_analyzed}")
+    print(f"Mudanças detectadas: {len(report.changes_detected)}")
+    print(f"Tribunais com mudanças: {report.tribunals_with_changes}")
+
+    # Highlights
+    if report.highlights:
+        print("\n🌟 PRINCIPAIS DESCOBERTAS:")
+        for h in report.highlights:
+            print(f"  {h}")
+
+    # Mudanças críticas
+    critical = [c for c in report.changes_detected if c.severity == "crítica"]
+    if critical:
+        print("\n🚨 MUDANÇAS CRÍTICAS:")
+        for change in critical:
+            print(f"\n  Tribunal: {change.tribunal}")
+            print(f"  Tipo: {change.change_type}")
+            print(f"  Antes: {change.before_ratio:.1%} → Depois: {change.after_ratio:.1%}")
+            print(f"  {change.explanation}")
+
+    # Alertas
+    alerts = report.get_critical_alerts()
+    if alerts:
+        print("\n" + "=" * 100)
+        print("🔔 ALERTAS IMPORTANTES")
+        print("=" * 100)
+        for alert in alerts[:3]:
+            print("\n" + alert.format_alert())
+
+    # Recomendações
+    if report.recommendations:
+        print("\n💡 RECOMENDAÇÕES:")
+        for rec in report.recommendations:
+            print(f"  • {rec}")
+
+    print("\n" + "=" * 100)
+
+
 def interactive_mode():
     """Modo interativo de consulta"""
     print_banner()
@@ -488,6 +561,20 @@ def main():
         help='Caminho para salvar documento gerado'
     )
 
+    parser.add_argument(
+        '--monitor-changes',
+        type=str,
+        metavar='TEMA',
+        help='Monitora mudanças de entendimento jurisprudencial sobre um tema'
+    )
+
+    parser.add_argument(
+        '--days-back',
+        type=int,
+        default=730,
+        help='Dias de histórico para análise (padrão: 730 = 2 anos)'
+    )
+
     args = parser.parse_args()
 
     # Validar API key
@@ -552,6 +639,16 @@ def main():
             tribunal=args.doc_tribunal,
             arguments=arguments_list,
             export_path=args.output
+        )
+    elif args.monitor_changes:
+        tribunals = None
+        if args.tribunals:
+            tribunals = [t.strip().upper() for t in args.tribunals.split(',')]
+
+        monitor_changes_cmd(
+            theme=args.monitor_changes,
+            tribunals=tribunals,
+            days_back=args.days_back
         )
     elif args.query:
         tribunal_filter = None

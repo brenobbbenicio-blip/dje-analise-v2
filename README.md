@@ -225,6 +225,17 @@ python main.py --generate-document petição_inicial \
 
 **Por que é genial:** ⏱️ Dias → Minutos | 🎯 Sempre fundamentado | 📊 Qualidade profissional
 
+### 🔔 Monitor de Mudanças de Entendimento (NOVO!)
+
+Detecta quando tribunais mudam posicionamento:
+
+```bash
+python main.py --monitor-changes "registro de candidatura" --days-back 730
+```
+
+**Detecta:** Inversão | Endurecimento | Flexibilização | Divergência
+**Por que é genial:** 🔔 Nunca desatualizado | 📈 Tendências | 🚨 Alertas automáticos
+
 ## 🎓 Guia de Tribunais
 
 Para um guia completo sobre como usar os múltiplos tribunais, consulte:
